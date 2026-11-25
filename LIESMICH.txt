@@ -1,6 +1,6 @@
 AGENT FILES – Englisch-Informationslücken-Spiel (Realschule BW)
 ================================================================
-Version: v0.1.3 (Prototyp, Phase 1) · Autor: M. Aldenius
+Version: v0.2.0 (Phase 2) · Autor: M. Aldenius
 
 WORUM GEHT ES?
 Zwei Teams spielen an zwei verschiedenen iPads: „Field Agents“ und „HQ“.
@@ -14,8 +14,16 @@ SO STARTET MAN
 3. HQ: die Nummer eintippen und kurz mit den Field Agents vergleichen.
 4. Nach jeder Station sagt das fertige Team dem anderen einen Funkcode.
 
+LEHRER-SEITE (nur für Lehrkräfte, wird im Spiel nicht verlinkt)
+.../AgentFiles/lehrer.html
+  - Lösungen zu jeder Missionsnummer
+  - Druckversion der HQ-Unterlagen (wenn ein iPad fehlt)
+  - Lehrerblatt (Ablauf, Gruppenbildung, Stolperstellen je Mission)
+
 DATEIEN
-index.html         Technik und Design
+index.html         Spiel (Oberfläche und Ablauf)
+lehrer.html        Lehrer-Seite
+technik/kern.js    Gemeinsame Technik (Rätsel aus der Nummer, Zeichnungen)
 daten/klasse5.js   Inhalte Klasse 5 (Texte, Wörter, Lösungen)
 docs/design/       Designvorlage (nur Referenz, wird im Spiel nicht geladen)
 

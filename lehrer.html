@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<!--
+  =====================================================================
+  AGENT FILES – LEHRER-SEITE
+  =====================================================================
+  Version: v0.2.0 · Autor: M. Aldenius (mit Claude)
+  Nur für Lehrkräfte (Link wird im Spiel nicht angezeigt).
+
+  Änderungsliste
+  --------------
+  v0.2.0 (25.11.2026) – neu: Lösungen zu einer Missionsnummer,
+    Druckversion der HQ-Unterlagen, Lehrerblatt
+
+  Datenschutz: Es wird nichts gespeichert und nichts übertragen.
+  =====================================================================
+-->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Agent Files – Lehrer-Seite</title>
+<style>
+:root{ --navy:#0B2D5B; --navy-dunkel:#0b1a33; --gelb:#F4C430; --koralle:#E85D3A; --tuerkis:#2FB7B3; --papier:#F7F1E3; --gruen:#3FA34D;
+  --f-titel:"Avenir Next Condensed","Arial Narrow",Impact,sans-serif; --f-text:"Avenir Next","Helvetica Neue",Arial,sans-serif;
+  --f-schreibmaschine:"American Typewriter","Courier New",monospace; }
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--f-text);color:var(--navy-dunkel);background:#eef1f5;line-height:1.45}
+header{background:var(--navy);color:#fff;padding:14px 18px;border-bottom:5px solid var(--gelb)}
+header h1{margin:0;font-family:var(--f-titel);font-weight:900;text-transform:uppercase;font-size:1.9rem}
+header p{margin:2px 0 0;opacity:.85}
+nav{display:flex;gap:8px;flex-wrap:wrap;padding:12px 18px;background:#fff;border-bottom:2px solid #d5dbe3}
+nav button,.knopf{font-family:var(--f-titel);font-weight:900;text-transform:uppercase;font-size:1.1rem;padding:10px 16px;border:3px solid var(--navy-dunkel);
+  border-radius:12px;background:#fff;cursor:pointer;box-shadow:0 3px 0 var(--navy-dunkel)}
+nav button.an,.knopf.gelb{background:var(--gelb)}
+.knopf.navy{background:var(--navy);color:#fff}
+main{max-width:980px;margin:0 auto;padding:18px}
+.box{background:#fff;border:2px solid #cfd6df;border-radius:14px;padding:16px 18px;margin-bottom:16px}
+.box h2{margin:0 0 10px;font-family:var(--f-titel);font-weight:900;text-transform:uppercase;color:var(--navy)}
+.box h3{margin:14px 0 6px;color:var(--navy)}
+.zeile{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}
+input,select{font-size:1.2rem;padding:8px 10px;border:2px solid var(--navy-dunkel);border-radius:10px;font-family:inherit}
+input.nr{width:120px;font-family:var(--f-titel);font-weight:900;font-size:1.6rem;text-align:center;letter-spacing:.1em}
+table{border-collapse:collapse;width:100%;margin:6px 0}
+td,th{border:1px solid #cfd6df;padding:6px 8px;text-align:left;vertical-align:top}
+th{background:#f3f5f8}
+.hinweis{background:#fff7d6;border-left:6px solid var(--gelb);padding:8px 12px;border-radius:6px;margin:8px 0}
+.fehler{background:#fde8e4;border-left:6px solid var(--koralle);padding:8px 12px;border-radius:6px}
+.code{font-family:var(--f-titel);font-weight:900;font-size:1.3rem;letter-spacing:.1em}
+.gross{font-family:var(--f-titel);font-weight:900;font-size:2.6rem;letter-spacing:.1em}
+svg.szene{width:100%;height:auto;display:block;border:2px solid var(--navy-dunkel);border-radius:10px;background:#fff}
+ul{margin:4px 0;padding-left:22px}
+
+/* ---------- Druckblatt (HQ) ---------- */
+.blatt{background:#fff;border:2px solid var(--navy-dunkel);border-radius:6px;padding:20px 24px;font-size:1.05rem}
+.blatt h2{font-family:var(--f-titel);font-weight:900;text-transform:uppercase;margin:0}
+.blatt-kopf{display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:4px solid var(--navy-dunkel);padding-bottom:10px;margin-bottom:12px}
+.blatt-nr{border:4px solid var(--navy-dunkel);border-radius:10px;padding:2px 14px;font-family:var(--f-titel);font-weight:900;font-size:2.6rem}
+.station{border:2px solid var(--navy-dunkel);border-radius:10px;padding:12px 14px;margin:12px 0;break-inside:avoid;page-break-inside:avoid}
+.station h3{margin:0 0 6px;font-family:var(--f-titel);font-weight:900;text-transform:uppercase;font-size:1.35rem;background:var(--gelb);display:inline-block;padding:2px 10px;border:2px solid var(--navy-dunkel);border-radius:6px}
+.akte-text{font-family:var(--f-schreibmaschine);font-size:1.1rem}
+.schreiblinie{display:inline-block;min-width:260px;border-bottom:2px solid var(--navy-dunkel);height:1.6em;vertical-align:bottom}
+.check-druck{display:inline-flex;align-items:center;gap:6px;margin:4px 14px 4px 0;font-weight:700;font-size:1.15rem}
+.check-druck span{width:22px;height:22px;border:2px solid var(--navy-dunkel);display:inline-block}
+.phr{background:#ffe27a;border:2px solid #c9a52a;border-radius:8px;padding:6px 10px;margin-top:8px}
+.zwei{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;align-items:start}
+
+@media print{
+  header,nav,.nicht-drucken{display:none !important}
+  body{background:#fff}
+  main{padding:0;max-width:none}
+  .box{border:none;padding:0}
+  .blatt{border:none;padding:0}
+  .seitenumbruch{break-before:page;page-break-before:always}
+}
+</style>
+</head>
+<body>
+<header><h1>Agent Files · Lehrer-Seite</h1><p>Nur für Lehrkräfte · v0.2.0 · Es wird nichts gespeichert.</p></header>
+<nav>
+  <button data-tab="loesung" class="an">Lösungen</button>
+  <button data-tab="druck">Druckversion HQ</button>
+  <button data-tab="blatt">Lehrerblatt</button>
+  <span style="margin-left:auto;display:flex;align-items:center;gap:6px">Klasse <select id="klasse"></select></span>
+</nav>
+<main id="inhalt"></main>
+
+<script src="daten/klasse5.js"></script>
+<script src="technik/kern.js"></script>
+<script>
+"use strict";
+const $ = (s, el = document) => el.querySelector(s);
+const inhalt = $("#inhalt");
+const klassen = Object.keys(AGENT_FILES.klassen).map(Number);
+let klasse = klassen[0];
+$("#klasse").innerHTML = klassen.map(k => `<option>${k}</option>`).join("");
+$("#klasse").onchange = e => { klasse = Number(e.target.value); zeigeTab(aktiv); };
+let aktiv = "loesung";
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => { aktiv = b.dataset.tab; zeigeTab(aktiv); });
+function zeigeTab(t){
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("an", b.dataset.tab === t));
+  ({ loesung: tabLoesung, druck: tabDruck, blatt: tabBlatt })[t]();
+}
+const daten = () => AGENT_FILES.klassen[klasse];
+const platzText = (st, id) => st.plaetze.find(p => p.id === id).en;
+const dingText = (st, d) => { const t = st.dinge.find(x => x.id === d.id); return d.anzahl > 1 ? d.anzahl + " " + t.plural : t.en; };
+const code = z => `<span class="code">${z.join(" ")}</span>`;
+function nummerGueltig(w){ const n = Number(w); return /^\d{3}$/.test(w) && w[0] !== "0" && n >= 100 && n <= 999; }
+
+/* =====================================================================
+   TAB 1: LÖSUNGEN ZU EINER MISSIONSNUMMER
+   ===================================================================== */
+function tabLoesung(){
+  inhalt.innerHTML = `<div class="box"><h2>Lösungen zu einer Missionsnummer</h2>
+    <p>Lasst euch von der Gruppe die Missionsnummer sagen (steht bei den Field Agents auf dem Bildschirm vor dem Start, bzw. auf dem HQ-Blatt).</p>
+    <div class="zeile"><input class="nr" id="nr" inputmode="numeric" maxlength="3" placeholder="472"><button class="knopf gelb" id="los">Anzeigen</button></div>
+    <div id="ergebnis"></div></div>`;
+  const los = () => {
+    const w = $("#nr").value.trim();
+    if (!nummerGueltig(w)){ $("#ergebnis").innerHTML = `<p class="fehler">Bitte eine dreistellige Nummer von 100 bis 999 eingeben.</p>`; return; }
+    $("#ergebnis").innerHTML = loesungHTML(missionErzeugen(klasse, Number(w)));
+  };
+  $("#los").onclick = los;
+  $("#nr").onkeydown = e => { if (e.key === "Enter") los(); };
+}
+function loesungHTML(sp){
+  let h = `<h3>${sp.mission.titel} · ${STERNE[sp.stufe]} · Klasse ${sp.klasse}</h3><table><tr><th>Station</th><th>Lösung</th><th>Funkcode</th></tr>`;
+  sp.stationen.forEach((s, i) => {
+    const st = s.def, r = s.raetsel;
+    let l = "";
+    if (st.baustein === "buchstabieren") l = `Agentenname: <b>${r.wort}</b> (tippt ${st.loeser === "field" ? "Field Agents" : "HQ"})`;
+    if (st.baustein === "tuer") l = `Tür: <b>${r.tuerName}</b> → Passwort <b>${r.passwort}</b>`;
+    if (st.baustein === "zimmer") l = `Verschoben:<ul>${r.bewegt.map(id => { const v = r.vorher.find(x => x.id === id), n = r.nachher.find(x => x.id === id);
+        return `<li><b>${dingText(st, v)}</b>: ${platzText(st, v.platz)} → ${platzText(st, n.platz)}</li>`; }).join("")}</ul>Zahlen der Field Agents fürs Finale: ${code(r.codeTeil)}`;
+    if (st.baustein === "kinder") l = `Kind: <b>${r.zielName}</b><br><i>${r.notiz.slice(1).join(" ")}</i><br>Zahlen von HQ fürs Finale: ${code(r.codeTeil)}`;
+    if (st.baustein === "finale") l = `Code für die Box: <b class="code">${sp.codeField.concat(sp.codeHQ).join(" ")}</b> (erst Field Agents, dann HQ)`;
+    const fc = st.loeser === "beide" ? "–" : `${code(r.funkcode)}<br><small>${st.loeser === "field" ? "Field → HQ" : "HQ → Field"}</small>`;
+    h += `<tr><td>${i + 1}. ${st.titel}</td><td>${l}</td><td>${fc}</td></tr>`;
+  });
+  return h + `</table>`;
+}
+
+/* =====================================================================
+   TAB 2: DRUCKVERSION DER HQ-UNTERLAGEN
+   ===================================================================== */
+function tabDruck(){
+  const d = daten();
+  inhalt.innerHTML = `<div class="box nicht-drucken"><h2>Druckversion der HQ-Unterlagen</h2>
+    <p>Für Gruppen ohne zweites iPad: HQ spielt mit diesem Blatt, nur die Field Agents haben ein iPad.
+    Die Field Agents tippen dafür auf dem Startbildschirm <b>„HQ spielt mit Papier? Nummer vom Blatt eingeben“</b> und geben die Nummer vom Blatt ein.</p>
+    <div class="zeile">Mission <select id="m">${d.missionen.map((m, i) => `<option value="${i}">${m.titel}</option>`).join("")}</select>
+      Schwierigkeit <select id="s">${STERNE.map((x, i) => `<option value="${i}" ${i === 1 ? "selected" : ""}>${x}</option>`).join("")}</select></div>
+    <div class="zeile"><button class="knopf gelb" id="neu">Neues Blatt erzeugen</button> oder vorhandene Nummer:
+      <input class="nr" id="nr" inputmode="numeric" maxlength="3"><button class="knopf" id="vorh">Blatt zu dieser Nummer</button></div>
+    <div class="hinweis">Tipp: Mehrere Blätter erzeugen (jedes Mal neue Nummer) und vor der Stunde ausdrucken. Jede Nummer ergibt andere Rätsel – Abschreiben bringt nichts.</div>
+    <div id="fehler"></div></div><div id="blatt"></div>`;
+  $("#neu").onclick = () => {
+    const nr = nummerErzeugen(d.missionen.length, Number($("#m").value), Number($("#s").value));
+    zeigeBlatt(nr);
+  };
+  $("#vorh").onclick = () => {
+    const w = $("#nr").value.trim();
+    if (!nummerGueltig(w)){ $("#fehler").innerHTML = `<p class="fehler">Bitte eine dreistellige Nummer von 100 bis 999 eingeben.</p>`; return; }
+    $("#fehler").innerHTML = ""; zeigeBlatt(Number(w));
+  };
+}
+function zeigeBlatt(nr){
+  $("#blatt").innerHTML = `<div class="nicht-drucken zeile"><button class="knopf navy" onclick="window.print()">Drucken / als PDF sichern</button></div>` + blattHTML(missionErzeugen(klasse, nr));
+}
+// Nachschlage-Tabelle: richtiger Eintrag + Ablenker mit falschen Codes
+function tabelle(eintraege, richtig, spalten, werteRichtig){
+  const zufall = () => [Math.floor(Math.random() * 10), Math.floor(Math.random() * 10)];
+  const ungleich = (z, ref) => { let x = zufall(); while (x.join("") === ref.join("")) x = zufall(); return x; };
+  const zeilen = eintraege.slice().sort().map(e => {
+    const w = e === richtig ? werteRichtig : werteRichtig.map(ref => ungleich(null, ref));
+    return `<tr><td><b>${e}</b></td>${w.map(z => `<td class="code">${z.join(" ")}</td>`).join("")}</tr>`;
+  }).join("");
+  return `<table><tr>${spalten.map(s => `<th>${s}</th>`).join("")}</tr>${zeilen}</table>`;
+}
+function blattHTML(sp){
+  const regeln = `<b>Agentenregeln:</b> Zeigt euer Blatt nie den Field Agents. Sprecht leise. Sprecht Englisch!`;
+  let h = `<div class="blatt"><div class="blatt-kopf"><div><h2>Agent Files · HQ</h2><div><b>${sp.mission.titel}</b> · ${STERNE[sp.stufe]} · Class ${sp.klasse}</div></div>
+    <div style="text-align:center"><div class="blatt-nr">${sp.nummer}</div><small>Mission No. – sagt sie den Field Agents</small></div></div>
+    <p class="akte-text">${sp.mission.briefing.en.join(" ")}</p><p>${regeln}</p>`;
+  sp.stationen.forEach((s, i) => {
+    const st = s.def, r = s.raetsel, saetze = st.saetze ? st.saetze[sp.stufe] : [];
+    const phr = saetze.length ? `<div class="phr"><b>Useful phrases:</b> ${saetze.join(" · ")}</div>` : "";
+    const funkVonField = `<p><i>Wenn die Field Agents fertig sind, sagen sie euch einen Funkcode. Dann geht ihr zur nächsten Station.</i></p>`;
+    let x = "";
+    if (st.baustein === "buchstabieren" && st.loeser === "field")
+      x = `<p>${st.aufgabe.hq}</p><p class="gross">${r.wort}</p>${funkVonField}`;
+    if (st.baustein === "buchstabieren" && st.loeser === "hq")
+      x = `<p>Die Field Agents buchstabieren euch einen Agentennamen. Schreibt ihn auf: <span class="schreiblinie"></span></p>
+        <p>Sucht den Namen in der Tabelle und sagt den Field Agents den Funkcode.</p>${tabelle(st.woerter[sp.stufe], r.wort, ["Agent name", "Radio code"], [r.funkcode])}`;
+    if (st.baustein === "tuer")
+      x = `<p>${st.aufgabe.hq}</p><div class="akte-text"><b>PASSWORDS – TOP SECRET</b><table>${r.liste.map(z => `<tr><td>${z.name}</td><td><b>${z.pw}</b></td></tr>`).join("")}</table></div>${funkVonField}`;
+    if (st.baustein === "zimmer")
+      x = `<p>${st.aufgabe.hq}</p><div class="zwei"><div>${zimmerSVG(r.vorher, st, st.beschriftet[sp.stufe], null)}<div style="text-align:center"><i>Professor Plum's room – photo</i></div></div>
+        <div>${(st.vorgehen ? `<b>So geht's:</b><ol>${st.vorgehen.hq.map(v => `<li>${v.replace("Abhaken!", "Ankreuzen!")}</li>`).join("")}</ol>` : "")}
+        ${(st.moebel || []).map(([en]) => `<div class="check-druck"><span></span>${en}</div>`).join("")}</div></div>${funkVonField}`;
+    if (st.baustein === "kinder")
+      x = `<p>Lest den Field Agents die Notiz vor und beantwortet ihre Fragen. Sie buchstabieren euch dann einen Namen – schreibt ihn auf.</p><div class="akte-text"><b>${st.notizTitel}</b><br>${r.notiz.join("<br>")}</div>
+        <p>Name on the bag: <span class="schreiblinie"></span></p>
+        <p>Sucht den Namen in der Tabelle. Sagt den Field Agents den Funkcode. Die zwei Zahlen sind <b>eure Zahlen fürs Finale</b> – merkt sie euch!</p>
+        ${tabelle(r.kinder.map(k => k.name), r.zielName, ["Name", "Radio code", "Your numbers"], [r.funkcode, r.codeTeil])}`;
+    if (st.baustein === "finale")
+      x = `<p>Sagt den Field Agents eure zwei Zahlen aus Station 3. Die Field Agents sagen euch ihre Zahlen und geben den Code auf dem iPad ein.</p>`;
+    const nr = sp.missionIndex === 0 ? "Training " + (i + 1) : (st.baustein === "finale" ? "Finale" : "Station " + (i + 1));
+    h += `<div class="station"><h3>${nr} – ${st.titel}</h3>${x}${phr}</div>`;
+  });
+  return h + `</div>`;
+}
+
+/* =====================================================================
+   TAB 3: LEHRERBLATT
+   ===================================================================== */
+function tabBlatt(){
+  const d = daten();
+  let h = `<div class="nicht-drucken zeile"><button class="knopf navy" onclick="window.print()">Drucken / als PDF sichern</button></div>
+  <div class="box"><h2>Agent Files – So funktioniert das Spiel</h2>
+    <p>Zwei Teams spielen an <b>zwei verschiedenen iPads</b>: <b>Field Agents</b> (sehen Schlösser, Räume, Szenen) und <b>HQ</b> (haben Akten, Fotos, Notizen).
+    Jedes iPad zeigt nur die halbe Information – die Mission gelingt nur, wenn beide Teams auf Englisch miteinander sprechen.
+    Die iPads sind <b>nicht verbunden</b>: Sie berechnen aus derselben Missionsnummer dieselben Rätsel. Es wird nichts gespeichert.</p>
+
+    <h3>Gruppenbildung (15 iPads)</h3>
+    <p>Eine Gruppe = 4 Kinder mit 2 iPads: ein Zweierteam Field Agents, ein Zweierteam HQ. Innerhalb des Zweierteams wechselt der „Speaker“ von Station zu Station.</p>
+    <table><tr><th>Klassengröße</th><th>Aufteilung</th><th>iPads</th></tr>
+      <tr><td>23</td><td>5 × 4er + 1 × 3er</td><td>12</td></tr><tr><td>24</td><td>6 × 4er</td><td>12</td></tr>
+      <tr><td>26</td><td>5 × 4er + 2 × 3er</td><td>14</td></tr><tr><td>28</td><td>7 × 4er</td><td>14</td></tr>
+      <tr><td>29</td><td>6 × 4er + 1 × 5er</td><td>14</td></tr></table>
+    <p>Fehlt ein iPad: HQ spielt mit der <b>Druckversion</b> (Reiter „Druckversion HQ“).</p>
+
+    <h3>Sitzordnung und Regeln (aus dem Praxistest)</h3>
+    <ul><li><b>Abschauen:</b> Die beiden Teams einer Gruppe sitzen Rücken an Rücken oder mit einem aufgestellten Ordner als Sichtschutz.</li>
+      <li><b>Lautstärke:</b> Gruppen weit auseinander setzen, ggf. Flur nutzen. Regel „Agents whisper.“</li>
+      <li><b>Englisch:</b> Auf die gelben „Useful phrases“ hinweisen – sie stehen bei beiden Teams auf dem Bildschirm. Das Funkgerät (unten rechts) hat Notfall-Sätze und eine Wörterhilfe.</li></ul>
+
+    <h3>Ablauf am iPad</h3>
+    <ol><li>Beide Teams stellen die Klasse am Drehschloss ein und wählen ihre Rolle.</li>
+      <li>Field Agents wählen Mission und Sterne (Schwierigkeit) und bekommen eine <b>Missionsnummer</b>. Die Sterne gelten für beide Teams.</li>
+      <li>HQ tippt die Nummer ein und vergleicht Missionsname und Sterne.</li>
+      <li>Wer eine Station gelöst hat, sagt dem anderen Team einen <b>Funkcode</b> – damit geht es dort weiter.</li>
+      <li>Im <b>Finale</b> sagen sich beide Teams ihre Zahlen und öffnen gemeinsam die Box.</li>
+      <li>Am Ende schätzt sich das Team im <b>Mission report</b> selbst ein und bekommt ein Abzeichen (Junior / Silver / Gold Agent).</li></ol>
+    <p><b>Raten ist begrenzt:</b> Bei Stationen mit Antippen gibt es nach zu vielen Fehlversuchen einen „Alarm“ (30 Sekunden Sperre) – in der Zeit sollen die Teams nachfragen.</p>
+    <p><b>Gruppe steckt fest?</b> Reiter „Lösungen“: Missionsnummer eingeben → alle Lösungen und Funkcodes.</p>
+    <p><b>Zeit:</b> Training ca. 8 Minuten, eine Mission ca. 15–20 Minuten → zwei Missionen pro Stunde sind möglich (z. B. mit Rollentausch).</p>
+  </div>`;
+  d.missionen.forEach((m, i) => {
+    const l = m.lehrer; if (!l) return;
+    h += `<div class="box ${i ? "seitenumbruch" : ""}"><h2>${i === 0 ? "" : "Mission " + i + ": "}${m.titel}</h2>
+      <table><tr><th style="width:28%">Dauer</th><td>${l.dauer}</td></tr><tr><th>Ziel</th><td>${l.ziel}</td></tr><tr><th>Sprachmittel</th><td>${l.sprache}</td></tr>
+      <tr><th>Stationen</th><td>${m.stationen.map((s, j) => `${j + 1}. ${s.titel} <small>(löst: ${s.loeser === "field" ? "Field Agents" : s.loeser === "hq" ? "HQ" : "beide"})</small>`).join("<br>")}</td></tr></table>
+      <h3>Vorher im Unterricht klären</h3><ul>${l.vorher.map(x => `<li>${x}</li>`).join("")}</ul>
+      <h3>Typische Stolperstellen</h3><ul>${l.stolper.map(x => `<li>${x}</li>`).join("")}</ul></div>`;
+  });
+  inhalt.innerHTML = h;
+}
+
+zeigeTab("loesung");
+</script>
+</body>
+</html>

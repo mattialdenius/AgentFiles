@@ -53,6 +53,17 @@ AGENT_FILES.klassen[5] = {
     ["Mission complete!", "Mission erfüllt!"]
   ],
 
+  /* ---------- Debriefing am Missionsende (Selbsteinschätzung, wird nicht gespeichert) ---------- */
+  debriefing: {
+    titel: "Mission report",
+    fragen: [
+      { en: "We talked in English.",   de: "Wir haben Englisch gesprochen.",          tipp: "Nächstes Mal: Lest die „Useful phrases“ laut vor – auch ganze Sätze!" },
+      { en: "We asked questions.",     de: "Wir haben nachgefragt, wenn etwas unklar war.", tipp: "Nächstes Mal: Fragt nach! „How do you spell it?“ – „Again, please.“" },
+      { en: "We were a good team.",    de: "Wir waren ein gutes Team.",                tipp: "Nächstes Mal: Wechselt euch beim Sprechen ab (Speaker: Agent 1 / Agent 2)." }
+    ],
+    abzeichen: ["Junior Agent", "Silver Agent", "Gold Agent"]
+  },
+
   missionen: [
 
     /* =================================================================
@@ -114,6 +125,13 @@ AGENT_FILES.klassen[5] = {
       ende: {
         en: "Well done! You are agents now!",
         de: "Training geschafft. Jetzt seid ihr bereit für eine echte Mission."
+      },
+      lehrer: {
+        dauer: "ca. 8 Minuten",
+        ziel: "Regeln kennenlernen: Rollen, Missionsnummer, Funkcodes. Buchstabieren in beide Richtungen.",
+        sprache: "Alphabet, Farben, Tiere aus Unit 1 (cat, dog, bat)",
+        vorher: ["Alphabet wiederholen, besonders E/I, G/J, A/R/Y", "Redemittel „How do you spell it?“ und „Again, please.“ einführen"],
+        stolper: ["Leerzeichen werden nicht eingetippt – nur die Buchstaben", "Teams sagen den Funkcode auf Deutsch → auf „zero, one, two …“ bestehen"]
       }
     },
 
@@ -258,6 +276,18 @@ AGENT_FILES.klassen[5] = {
       ende: {
         en: "Mission complete! Biscuit is here. Well done, agents!",
         de: "Ihr habt Biscuit gefunden. Super Teamarbeit!"
+      },
+      lehrer: {
+        dauer: "ca. 15–20 Minuten (im Test unter 20 Minuten – zwei Missionen pro Stunde sind möglich)",
+        ziel: "Informationen austauschen: buchstabieren, Gegenstände und Orte beschreiben, Personen beschreiben, nachfragen.",
+        sprache: "to be, Fragen mit to be, Verneinung (isn't), there is/are, Plural, in/on/under/next to, his/her, ’s-Genitiv; Schulsachen, Möbel, Kleidung, Farben, Zahlen 0–9",
+        vorher: ["Präpositionen in/on/under/next to mit Gegenständen im Klassenzimmer zeigen", "Möbelwörter wiederholen: bed, shelf, chair, table, wardrobe, carpet", "his/her und „It's a boy / girl.“ kurz wiederholen"],
+        stolper: [
+          "Station 1: Mr, Mrs und Ms sind verschiedene Namen (bei drei Sternen gibt es z. B. Mr Green und Mrs Green)",
+          "Station 2: HQ soll die Möbel-Checkliste der Reihe nach abarbeiten – sonst wird wild geraten (nach 2 Fehlversuchen 30 Sekunden Alarm)",
+          "Station 3: Bei drei Sternen enthält die Notiz eine Verneinung („Her bag isn't purple.“) – genau lesen!",
+          "Finale: Zuerst die Zahlen der Field Agents, dann die von HQ"
+        ]
       }
     }
   ]
