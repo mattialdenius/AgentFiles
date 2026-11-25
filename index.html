@@ -3,11 +3,15 @@
   =====================================================================
   AGENT FILES – Englisch-Informationslücken-Spiel (Realschule BW)
   =====================================================================
-  Version: v0.2.0
+  Version: v0.3.0
   Autor:   M. Aldenius (mit Claude)
 
   Änderungsliste
   --------------
+  v0.3.0 (25.11.2026) – Klasse 5, Mission 2 „The Birthday Surprise“
+    - Neue Rätsel-Bausteine: Kalender (Datum), Uhr (Tagesablauf),
+      Laden (Einkaufsliste + Preis), Gäste (Profile mit Hobbys/Tieren)
+    - Erklärtexte für die neuen Stationen, Raten begrenzt bei „Gäste“
   v0.2.0 (25.11.2026) – Phase 2
     - Neue Lehrer-Seite lehrer.html (eigener Link): Lösungen zu jeder
       Missionsnummer, Druckversion der HQ-Unterlagen, Lehrerblatt
@@ -265,6 +269,34 @@ body.hq .sprecher{background:var(--koralle)}
   border:5px solid var(--navy-dunkel);box-shadow:0 6px 0 var(--navy-dunkel), inset 0 0 0 8px rgba(255,255,255,.45);margin:14px auto 4px;font-size:3rem;line-height:1}
 .abzeichen .titel{font-size:1.25rem;margin-top:6px;padding:0 10px;text-align:center}
 
+/* Mission 2: Kalender, Uhr, Laden, Gäste (v0.3.0) */
+.wahl-raster{display:grid;gap:8px}
+.wahl-raster.monate{grid-template-columns:repeat(4,1fr)}
+.wahl-raster.tage{grid-template-columns:repeat(7,1fr)}
+.wahl-raster.stunden{grid-template-columns:repeat(6,1fr)}
+.wahl-raster.arten{grid-template-columns:repeat(2,1fr)}
+.wahl{min-height:54px;border:3px solid var(--navy-dunkel);border-radius:10px;background:#fff;font-family:var(--f-titel);font-weight:900;font-size:1.15rem;cursor:pointer;box-shadow:0 3px 0 var(--navy-dunkel);color:var(--navy-dunkel)}
+.wahl.an{background:var(--gelb)}
+.kal-titel{font-family:var(--f-titel);font-weight:900;text-transform:uppercase;font-size:1.2rem;margin:10px 0 6px}
+.auswahl-zeile{text-align:center;font-family:var(--f-titel);font-weight:900;font-size:1.6rem;margin:12px 0}
+.ablauf{list-style:none;padding:0;margin:0}
+.ablauf li{display:flex;align-items:center;gap:12px;padding:6px 4px;border-bottom:1px dashed #b9a77f;font-size:1.25rem}
+.ablauf .ic{font-size:1.8rem;width:40px;text-align:center}
+.uhr-vorschau{display:flex;align-items:center;justify-content:center;gap:16px;margin:10px 0}
+.regal{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.produkt{border:3px solid var(--navy-dunkel);border-radius:12px;background:#fff;padding:6px;text-align:center;cursor:pointer;box-shadow:0 3px 0 var(--navy-dunkel);font-weight:700}
+.produkt .preis{display:inline-block;background:var(--koralle);color:#fff;border-radius:8px;padding:0 8px;font-family:var(--f-titel);font-weight:900;margin-top:2px}
+.tasche{margin-top:14px;background:#fff;border:3px dashed var(--navy-dunkel);border-radius:14px;padding:10px 14px}
+.tasche-zeile{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0;font-size:1.2rem}
+.minus{width:44px;height:44px;border-radius:50%;border:3px solid var(--navy-dunkel);background:var(--koralle);color:#fff;font-size:1.5rem;font-weight:900;cursor:pointer}
+.profile{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.profil{border:3px solid var(--navy-dunkel);border-radius:14px;background:#fff;padding:8px;text-align:center;cursor:pointer;box-shadow:0 4px 0 var(--navy-dunkel)}
+.profil .ava{font-size:3rem;line-height:1.1}
+.profil .pname{font-family:var(--f-titel);font-weight:900;font-size:1.4rem}
+.profil .merk{display:flex;align-items:center;justify-content:center;gap:6px;font-size:1.7rem;margin-top:4px}
+.profil .merk small{font-size:.85rem;font-weight:600}
+.profil.richtig{background:#d9f2df;outline:5px solid var(--gruen)}
+
 /* Alarm-Leiste */
 .alarm-leiste{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;gap:12px;padding:8px 14px;
   background:var(--koralle);color:#fff;border-bottom:4px solid var(--navy-dunkel);box-shadow:0 4px 0 rgba(0,0,0,.25);font-size:1.1rem;line-height:1.3}
@@ -296,7 +328,7 @@ svg.szene{width:100%;height:auto;display:block;border:3px solid var(--navy-dunke
 </head>
 <body>
 <div id="app"></div>
-<footer>Agent Files · v0.2.0 · M. Aldenius</footer>
+<footer>Agent Files · v0.3.0 · M. Aldenius</footer>
 
 <!-- Inhalte (eine Datei pro Klasse) -->
 <script src="daten/klasse5.js"></script>
@@ -308,9 +340,9 @@ svg.szene{width:100%;height:auto;display:block;border:3px solid var(--navy-dunke
 /* =====================================================================
    1) EINSTELLUNGEN
    ===================================================================== */
-const VERSION = "v0.2.0";
+const VERSION = "v0.3.0";
 /* Raten begrenzen: erlaubte Fehlversuche pro Station, danach Alarm-Sperre */
-const RATEN = { zimmer: 2, kinder: 1, sperreSekunden: 30 };
+const RATEN = { zimmer: 2, kinder: 1, gaeste: 1, sperreSekunden: 30 };
 const KLASSEN_ANGEBOT = [5, 6, 7, 8];          // Drehschloss
 
 /* Erklärtexte bei Fehlern (Klasse 5–7 auf Deutsch) */
@@ -342,6 +374,26 @@ const ERKLAERUNG = {
   finale: {
     text: "Der Code stimmt nicht. Zuerst kommen die zwei Zahlen der Field Agents, danach die zwei Zahlen von HQ.",
     beispiel: "Our numbers are four and seven. What are your numbers?"
+  },
+  kalender: {
+    text: "Das Datum stimmt noch nicht. Fragt HQ noch einmal nach Monat und Tag.",
+    beispiel: "When is his birthday? – It's on the ninth of October.<br>first (1st) · second (2nd) · third (3rd) · fifth (5th) · eighth (8th) · ninth (9th) · twelfth (12th)"
+  },
+  uhr: {
+    text: "Die Uhrzeit stimmt noch nicht. Fragt die Field Agents noch einmal.",
+    beispiel: "When does he come home? – He comes home at half past five.<br><b>quarter past</b> = Viertel nach · <b>half past five</b> = halb sechs (5:30!) · <b>quarter to</b> = Viertel vor"
+  },
+  laden: {
+    text: "In der Tasche stimmt noch etwas nicht: zu viel, zu wenig oder die falsche Verpackung. Lasst euch die Einkaufsliste noch einmal vorlesen.",
+    beispiel: "We need two bottles of lemonade. – Two or three? – Two.<br>bottle = Flasche · can = Dose · packet = Packung · box = Schachtel · bar = Tafel"
+  },
+  geld: {
+    text: "Der Betrag stimmt nicht. Fragt die Field Agents noch einmal nach dem Preis.",
+    beispiel: "How much is it? – It's forty-seven pounds.<br>forty-seven = 47 · seventy-four = 74 · fifteen = 15 · fifty = 50"
+  },
+  gaeste: {
+    text: "Das ist nicht das richtige Kind. Lasst euch die Notiz noch einmal vorlesen und prüft Satz für Satz.",
+    beispiel: "Does she play tennis? – Yes, she does. / No, she doesn't.<br><b>doesn't</b> = nicht: She doesn't play chess. = Sie spielt kein Schach."
   },
   nummer: {
     text: "Diese Missionsnummer gibt es nicht. Sie hat drei Ziffern und beginnt nicht mit 0. Fragt die Field Agents noch einmal.",
@@ -726,6 +778,157 @@ function zeigeAbschluss(report){
    6) ANSICHTEN DER BAUSTEINE (je Rolle)
    ===================================================================== */
 const ANSICHT = {
+
+  /* ---------- Mission 2, Station 1: Kalender ---------- */
+  kalender: {
+    field(c){
+      const st = c.def; let monat = null, tag = null;
+      const kurz = n => n + (n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th");
+      const w = html(`<div><div class="kal-titel">Calendar – month</div>
+        <div class="wahl-raster monate">${st.monate.map((m, i) => `<button class="wahl" data-m="${i}">${m}</button>`).join("")}</div>
+        <div class="kal-titel">Day</div>
+        <div class="wahl-raster tage">${st.ordnungszahlen.map((o, i) => `<button class="wahl" data-t="${i + 1}">${kurz(i + 1)}</button>`).join("")}</div>
+        <div class="auswahl-zeile" data-aus>–</div>
+        <div class="knopfreihe"><button class="knopf tuerkis" data-ok>OK</button></div></div>`);
+      const zeigen = () => {
+        w.querySelectorAll("[data-m]").forEach(b => b.classList.toggle("an", Number(b.dataset.m) === monat));
+        w.querySelectorAll("[data-t]").forEach(b => b.classList.toggle("an", Number(b.dataset.t) === tag));
+        w.querySelector("[data-aus]").textContent = (tag ? "the " + kurz(tag) : "…") + " of " + (monat !== null ? st.monate[monat] : "…");
+      };
+      w.querySelectorAll("[data-m]").forEach(b => b.onclick = () => { monat = Number(b.dataset.m); zeigen(); });
+      w.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { tag = Number(b.dataset.t); zeigen(); });
+      w.querySelector("[data-ok]").onclick = () => {
+        if (monat === null || !tag) return;
+        if (monat === c.r.monat && tag === c.r.tag) c.geloest("The party is on the " + st.ordnungszahlen[tag - 1] + " of " + st.monate[monat] + "!");
+        else erklaeren("kalender");
+      };
+      zeigen(); c.inhalt.appendChild(w);
+    },
+    hq(c){
+      const h = c.r.hq;
+      const text = h.art === "liste"
+        ? `<h3>BIRTHDAYS</h3>${h.zeilen.map(([p, d]) => `<div class="liste-zeile"><span>${p}</span><b>${d}</b></div>`).join("")}`
+        : `<h3>${h.art === "raetsel" ? "A RIDDLE" : "NOTE"}</h3>${h.zeilen.map(z => `<div>${z}</div>`).join("")}`;
+      c.inhalt.appendChild(html(`<div class="zweispaltig"><div class="papier">${text}</div>${zettel(c.def.saetze[c.stufe])}</div>`));
+    }
+  },
+
+  /* ---------- Mission 2, Station 2: Uhrzeit ---------- */
+  uhr: {
+    field(c){
+      const st = c.def, rot = c.stufe === 2;
+      const zeile = (icon, text, h, m) => `<li><span class="ic">${icon}</span><span style="flex:1">${text} at ${c.stufe === 0 ? "<b>" + zeitWort(h, m) + "</b>." : "…"}</span>${c.stufe === 0 ? "" : uhrSVG(h, m, 70)}</li>`;
+      let zeilen = c.r.zeiten.map(z => {
+        let t = z.en;
+        if (rot && z.id === "penguins") t = t.replace("He feeds", "He always feeds");
+        if (rot && z.id === st.zielId) t = t.replace("He comes", "On Saturdays he comes");
+        return zeile(z.icon, t, z.h, z.m);
+      });
+      if (rot && c.r.falle) zeilen.splice(zeilen.length - 1, 0, zeile("🏠", c.r.falle.tag, c.r.falle.h, c.r.falle.m));
+      c.inhalt.appendChild(html(`<div><div class="titel" style="font-size:1.5rem;text-align:center">${rot ? "Professor Plum's week" : st.ueberschrift}</div><ul class="ablauf">${zeilen.join("")}</ul></div>`));
+    },
+    hq(c){
+      const ziel = zeitBenannt(c.r.ziel.h, c.r.ziel.m);
+      let stunde = null, art = null;
+      const w = html(`<div class="zweispaltig"><div class="papier"><h3>YOUR JOB</h3><div>${c.def.auftrag}</div>
+          <div class="kal-titel" style="font-family:var(--f-titel)">Hour</div>
+          <div class="wahl-raster stunden">${[1,2,3,4,5,6,7,8,9,10,11,12].map(n => `<button class="wahl" data-h="${n}">${n}</button>`).join("")}</div>
+          <div class="kal-titel" style="font-family:var(--f-titel)">Minutes</div>
+          <div class="wahl-raster arten">${ZEIT_ARTEN.map((a, i) => `<button class="wahl" data-a="${i}">${a}</button>`).join("")}</div>
+          <div class="uhr-vorschau" data-v></div>
+          <div class="knopfreihe"><button class="knopf tuerkis" data-ok>OK</button></div></div>
+        ${zettel(c.def.saetze[c.stufe])}</div>`);
+      const zeigen = () => {
+        w.querySelectorAll("[data-h]").forEach(b => b.classList.toggle("an", Number(b.dataset.h) === stunde));
+        w.querySelectorAll("[data-a]").forEach(b => b.classList.toggle("an", Number(b.dataset.a) === art));
+        const v = w.querySelector("[data-v]");
+        if (stunde === null || art === null){ v.innerHTML = `<span class="de">Wählt Stunde und Minuten.</span>`; return; }
+        const h = art === 3 ? (stunde === 1 ? 12 : stunde - 1) : stunde, m = art * 15;
+        v.innerHTML = uhrSVG(h, m, 90) + `<b style="font-size:1.4rem">${zeitWort(h, m)}</b>`;
+      };
+      w.querySelectorAll("[data-h]").forEach(b => b.onclick = () => { stunde = Number(b.dataset.h); zeigen(); });
+      w.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { art = Number(b.dataset.a); zeigen(); });
+      w.querySelector("[data-ok]").onclick = () => {
+        if (stunde === null || art === null) return;
+        if (stunde === ziel.stunde && art === ziel.art) c.geloest("The party is at " + zeitWort(c.r.ziel.h, c.r.ziel.m) + "!");
+        else erklaeren("uhr");
+      };
+      zeigen(); c.inhalt.appendChild(w);
+    }
+  },
+
+  /* ---------- Mission 2, Station 3: Laden ---------- */
+  laden: {
+    field(c){
+      const st = c.def, tasche = {}; let bezahlt = false;
+      const p = id => st.produkte.find(x => x.id === id);
+      const name = (id, n) => n === 1 ? p(id).en : p(id).plural;
+      const zeichnen = () => {
+        c.inhalt.innerHTML = "";
+        if (bezahlt){
+          c.inhalt.appendChild(html(`<div class="erfolg"><div class="haken">✓ Correct!</div><p class="hinweis">Everything is in the bag.</p>
+            <div class="code-box"><div class="de">Sagt HQ den Preis:</div><div class="code-gross">${c.r.gesamt}</div><div class="hinweis"><b>It's ${zahlWort(c.r.gesamt)} pounds.</b></div></div></div>`));
+          return;
+        }
+        const w = html(`<div><div class="titel" style="font-size:1.4rem;text-align:center;margin-bottom:8px">Corner shop</div>
+          <div class="regal">${c.r.regal.map(g => `<div class="produkt" data-id="${g.id}">${produktSVG(p(g.id))}<div>${p(g.id).en}</div><div class="preis">£${g.preis}</div></div>`).join("")}</div>
+          <div class="tasche"><div class="titel" style="font-size:1.2rem">👜 Your bag</div>
+            ${Object.keys(tasche).length ? Object.entries(tasche).map(([id, n]) => `<div class="tasche-zeile"><span><b>${n}</b> × ${name(id, n)}</span><button class="minus" data-weg="${id}">−</button></div>`).join("") : `<div class="de">Tippt die Sachen im Regal an.</div>`}
+            <div class="knopfreihe"><button class="knopf tuerkis" data-zahlen>Pay</button></div></div></div>`);
+        w.querySelectorAll(".produkt").forEach(k => k.onclick = () => { tasche[k.dataset.id] = (tasche[k.dataset.id] || 0) + 1; zeichnen(); });
+        w.querySelectorAll("[data-weg]").forEach(k => k.onclick = () => { const id = k.dataset.weg; tasche[id]--; if (!tasche[id]) delete tasche[id]; zeichnen(); });
+        w.querySelector("[data-zahlen]").onclick = () => {
+          const ok = Object.keys(tasche).length === c.r.liste.length && c.r.liste.every(x => tasche[x.id] === x.anzahl);
+          if (ok){ bezahlt = true; zeichnen(); } else erklaeren("laden");
+        };
+        c.inhalt.appendChild(w);
+      };
+      zeichnen();
+    },
+    hq(c){
+      const st = c.def, p = id => st.produkte.find(x => x.id === id);
+      const zeile = x => (x.anzahl === 1 ? p(x.id).art + " " + p(x.id).en : EINER[x.anzahl] + " " + p(x.id).plural);
+      const w = html(`<div class="zweispaltig"><div class="papier"><h3>${st.listenTitel.toUpperCase()}</h3>
+          ${c.r.liste.map(x => `<div>${c.stufe === 0 ? (p(x.id).emoji || "") + " " : "– "}${zeile(x)}</div>`).join("")}</div>${zettel(st.saetze[c.stufe])}</div>`);
+      const t = html(`<div class="papier" style="margin-top:16px"><h3>Money</h3><div class="de">Die Field Agents sagen euch den Preis. Tippt ihn ein (in pounds).</div><div data-t></div></div>`);
+      t.querySelector("[data-t]").appendChild(tastatur({ laenge: 2, typ: "zahlen", beiOk: (wert, zurueck) => {
+        if (Number(wert) === c.r.gesamt) c.geloest("It's " + zahlWort(c.r.gesamt) + " pounds. Here's your change!");
+        else erklaeren("geld", zurueck);
+      }}));
+      c.inhalt.appendChild(w); c.inhalt.appendChild(t);
+    }
+  },
+
+  /* ---------- Mission 2, Station 4: Gäste ---------- */
+  gaeste: {
+    field(c){
+      const st = c.def, finde = (l, id) => l.find(x => x.id === id), label = c.stufe === 0;
+      let uebrig = RATEN.gaeste, gesperrt = false, gefunden = false;
+      const merk = (e, t) => `<div class="merk">${e}${label ? `<small>${t}</small>` : ""}</div>`;
+      const zeichnen = () => {
+        c.inhalt.innerHTML = "";
+        c.inhalt.appendChild(html(`<div><div class="profile">${c.r.profile.map(k => `<div class="profil ${gefunden && k.name === c.r.zielName ? "richtig" : ""}" data-name="${k.name}">
+            <div class="ava">${k.g === "boy" ? "👦" : "👧"}</div><div class="pname">${k.name}</div>
+            ${merk(finde(st.hobbys, k.hobby).emoji, finde(st.hobbys, k.hobby).en.replace("plays ", ""))}
+            ${merk("❤️ " + finde(st.tiere, k.tier).emoji, finde(st.tiere, k.tier).en)}
+            ${merk("🏠 " + finde(st.haustiere, k.pet).emoji, finde(st.haustiere, k.pet).en.replace(/^a /, ""))}</div>`).join("")}</div>
+          <div class="zaehler">Who is Professor Plum's friend? &nbsp;·&nbsp; ${gesperrt ? "🚨 gesperrt" : versucheText(uebrig, RATEN.gaeste)}</div></div>`));
+        c.inhalt.classList.toggle("gesperrt", gesperrt);
+        c.inhalt.querySelectorAll(".profil").forEach(k => k.addEventListener("click", () => {
+          if (gesperrt) return;
+          if (k.dataset.name === c.r.zielName){
+            const ziel = c.r.profile.find(p => p.name === c.r.zielName), name = ziel.name.charAt(0) + ziel.name.slice(1).toLowerCase();
+            c.geloest(name + " is Professor Plum's friend. Invite " + (ziel.g === "boy" ? "him" : "her") + " to the party!");
+          } else if (uebrig > 0){ uebrig--; zeichnen(); erklaeren("gaeste"); }
+          else { gesperrt = true; zeichnen(); alarm("Is it a boy or a girl? – Does he play tennis? – What's her pet?", () => { gesperrt = false; uebrig = RATEN.gaeste; zeichnen(); }); }
+        }));
+      };
+      zeichnen();
+    },
+    hq(c){
+      c.inhalt.appendChild(html(`<div class="zweispaltig"><div class="papier"><h3>${c.def.notizTitel}</h3>${c.r.notiz.map(z => `<div>${z}</div>`).join("")}</div>${zettel(c.def.saetze[c.stufe])}</div>`));
+    }
+  },
 
   /* ---------- Buchstabieren (Training) ---------- */
   buchstabieren: {

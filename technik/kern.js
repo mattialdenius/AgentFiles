@@ -25,6 +25,41 @@ function zufallsquelle(startzahl){
   return r;
 }
 
+
+/* ---------- Zahlen und Uhrzeiten als englische Wörter ---------- */
+const EINER = ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+const ZEHNER = ["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+function zahlWort(n){ if (n < 20) return EINER[n]; const z = Math.floor(n / 10), e = n % 10; return ZEHNER[z] + (e ? "-" + EINER[e] : ""); }
+const ZEIT_ARTEN = ["o'clock", "quarter past", "half past", "quarter to"];
+function zeitBenannt(h, m){                       // → { stunde (1–12, wie man sie sagt), art (0–3) }
+  const art = m / 15, h12 = ((h % 12) + 11) % 12 + 1;
+  return { stunde: art === 3 ? (h12 % 12) + 1 : h12, art };
+}
+function zeitWort(h, m){
+  const b = zeitBenannt(h, m), w = EINER[b.stunde];
+  return b.art === 0 ? w + " o'clock" : ZEIT_ARTEN[b.art] + " " + w;
+}
+function uhrSVG(h, m, groesse){
+  const g = groesse || 64, wm = m * 6, wh = (h % 12) * 30 + m * 0.5;
+  const zeiger = (w, l, b) => `<line x1="50" y1="50" x2="${50 + l * Math.sin(w * Math.PI / 180)}" y2="${50 - l * Math.cos(w * Math.PI / 180)}" stroke="#0b1a33" stroke-width="${b}" stroke-linecap="round"/>`;
+  let striche = ""; for (let i = 0; i < 12; i++){ const w = i * 30 * Math.PI / 180; striche += `<line x1="${50 + 38 * Math.sin(w)}" y1="${50 - 38 * Math.cos(w)}" x2="${50 + 44 * Math.sin(w)}" y2="${50 - 44 * Math.cos(w)}" stroke="#0b1a33" stroke-width="${i % 3 ? 2 : 4}"/>`; }
+  return `<svg viewBox="0 0 100 100" width="${g}" height="${g}"><circle cx="50" cy="50" r="47" fill="#fff" stroke="#0b1a33" stroke-width="5"/>${striche}${zeiger(wh, 24, 6)}${zeiger(wm, 36, 4)}<circle cx="50" cy="50" r="4" fill="#e85d3a"/></svg>`;
+}
+
+/* ---------- Produkte im Laden (Verpackung als einfache Form) ---------- */
+function produktSVG(p){
+  const f = p.farbe || "#f4c430", rand = 'stroke="#0b1a33" stroke-width="3" stroke-linejoin="round"';
+  const emo = `<text x="30" y="44" text-anchor="middle" font-size="22">${p.emoji || ""}</text>`;
+  switch (p.form){
+    case "bottle": return `<svg viewBox="0 0 60 70" width="60" height="70"><path d="M24 4 L36 4 L36 16 Q46 22 46 32 L46 64 L14 64 L14 32 Q14 22 24 16 Z" fill="${f}" ${rand}/><rect x="18" y="34" width="24" height="16" fill="#fff" ${rand}/></svg>`;
+    case "can": return `<svg viewBox="0 0 60 70" width="60" height="70"><rect x="16" y="22" width="28" height="42" rx="4" fill="${f}" ${rand}/><ellipse cx="30" cy="22" rx="14" ry="4" fill="#c7ced6" ${rand}/><rect x="16" y="36" width="28" height="12" fill="#fff" ${rand}/></svg>`;
+    case "packet": return `<svg viewBox="0 0 60 70" width="60" height="70"><path d="M12 10 L48 10 L44 64 L16 64 Z" fill="${f}" ${rand}/><path d="M12 10 L16 16 L20 10 L24 16 L28 10 L32 16 L36 10 L40 16 L44 10 L48 16" fill="none" ${rand}/>${emo}</svg>`;
+    case "box": return `<svg viewBox="0 0 60 70" width="60" height="70"><rect x="8" y="18" width="44" height="44" fill="${f}" ${rand}/><path d="M8 18 L14 10 L46 10 L52 18" fill="#fff" ${rand}/>${emo}</svg>`;
+    case "bar": return `<svg viewBox="0 0 60 70" width="60" height="70"><rect x="6" y="24" width="48" height="26" rx="3" fill="${f}" ${rand}/><path d="M22 24 L22 50 M38 24 L38 50" stroke="#fff" stroke-width="2"/></svg>`;
+  }
+  return `<svg viewBox="0 0 60 70" width="60" height="70"><text x="30" y="50" text-anchor="middle" font-size="40">${p.emoji}</text></svg>`;
+}
+
 /* Missionsnummer: verschlüsselt Mission und Ampel.
    nummer % (3*K) = stufe*K + missionIndex   (K = Anzahl Missionen der Klasse) */
 function nummerErzeugen(K, missionIndex, stufe){
@@ -118,7 +153,106 @@ const ERZEUGEN = {
     return { kinder: r.mischen(kinder), zielName: ziel.name, notiz, codeTeil: r.ziffern(2) };
   },
 
-  finale(){ return {}; }
+  finale(){ return {}; },
+
+  /* ---------- Mission 2, Station 1: Kalender (Datum) ---------- */
+  kalender(r, stufe, st){
+    const monat = r.zahl(1, 11), tag = r.zahl(2, 13);          // Monat-Index 1–11 (für „month after …“), Tag 2–13
+    const datumText = (m, t) => "the " + st.ordnungszahlen[t - 1] + " of " + st.monate[m];
+    let hq;
+    if (stufe === 0) hq = { art: "notiz", zeilen: [st.hauptperson + "'s birthday is on " + datumText(monat, tag) + "."] };
+    else if (stufe === 1){
+      const benutzt = new Set([monat + "-" + tag]);
+      const zeilen = [[st.hauptperson, datumText(monat, tag)]];
+      st.personen.forEach(p => { let m, t; do { m = r.zahl(0, 11); t = r.zahl(1, 13); } while (benutzt.has(m + "-" + t)); benutzt.add(m + "-" + t); zeilen.push([p, datumText(m, t)]); });
+      hq = { art: "liste", zeilen: r.mischen(zeilen) };
+    } else {
+      hq = { art: "raetsel", zeilen: [st.hauptperson + " says:", "\"My birthday is in the month after " + st.monate[monat - 1] + ".", "The day is the number after " + st.zahlen[tag - 2] + ".\""] };
+    }
+    return { monat, tag, hq, codeTeil: r.ziffern(2) };
+  },
+
+  /* ---------- Mission 2, Station 2: Uhrzeit aus dem Tagesablauf ---------- */
+  uhr(r, stufe, st){
+    const zeiten = st.taetigkeiten.map(t => {
+      const von = t.von[0] * 60 + t.von[1], bis = t.bis[0] * 60 + t.bis[1];
+      const schritte = (bis - von) / 15, min = von + 15 * r.zahl(0, schritte);
+      return { id: t.id, en: t.en, icon: t.icon, h: Math.floor(min / 60), m: min % 60 };
+    });
+    const ziel = zeiten.find(z => z.id === st.zielId);
+    let falle = null;
+    if (stufe === 2){
+      let min; do { min = 17 * 60 + 15 * r.zahl(-4, 7); } while (min === ziel.h * 60 + ziel.m);
+      falle = { h: Math.floor(min / 60), m: min % 60, tag: st.falleTag };
+    }
+    return { zeiten, ziel: { h: ziel.h, m: ziel.m }, falle };
+  },
+
+  /* ---------- Mission 2, Station 3: Einkaufen ---------- */
+  laden(r, stufe, st){
+    const N = st.anzahlListe[stufe], R = st.regalGroesse[stufe];
+    const nachId = id => st.produkte.find(p => p.id === id);
+    let liste, gesamt, versuch = 0;
+    do {
+      let ids;
+      if (stufe === 0) ids = r.mischen(st.einfach).slice(0, N);
+      else {
+        const mitForm = r.mischen(st.produkte.filter(p => p.form).map(p => p.id));
+        const zwilling = stufe === 2 ? r.eins(st.zwillinge)[r.zahl(0, 1)] : null;
+        ids = [];
+        if (zwilling) ids.push(zwilling);
+        mitForm.forEach(id => { if (ids.length < 2 + (stufe === 2 ? 1 : 0) && !ids.includes(id) && !st.zwillinge.some(z => z.includes(id) && z.some(x => ids.includes(x)))) ids.push(id); });
+        r.mischen(st.produkte.map(p => p.id)).forEach(id => { if (ids.length < N && !ids.includes(id) && !st.zwillinge.some(z => z.includes(id) && z.some(x => ids.includes(x)))) ids.push(id); });
+      }
+      liste = ids.map(id => { const p = nachId(id); return { id, anzahl: r.eins(p.menge), preis: r.zahl(p.preis[0], p.preis[1]) }; });
+      gesamt = liste.reduce((a, x) => a + x.anzahl * x.preis, 0);
+      versuch++;
+    } while ((gesamt < 21 || gesamt > 99) && versuch < 200);
+    // Regal: Liste + Ablenker (bei Rot immer der „Zwilling“ dabei)
+    const regal = liste.map(x => ({ id: x.id, preis: x.preis }));
+    if (stufe === 2) st.zwillinge.forEach(z => z.forEach(id => {
+      if (z.some(x => liste.some(l => l.id === x)) && !regal.some(g => g.id === id)) regal.push({ id, preis: r.zahl(nachId(id).preis[0], nachId(id).preis[1]) });
+    }));
+    r.mischen(st.produkte.map(p => p.id)).forEach(id => { if (regal.length < R && !regal.some(g => g.id === id)) regal.push({ id, preis: r.zahl(nachId(id).preis[0], nachId(id).preis[1]) }); });
+    return { liste: r.mischen(liste), regal: r.mischen(regal), gesamt, codeTeil: r.ziffern(2) };
+  },
+
+  /* ---------- Mission 2, Station 4: Gäste finden ---------- */
+  gaeste(r, stufe, st){
+    const n = st.anzahlProfile[stufe];
+    const andere = (liste, wert) => r.eins(liste.filter(x => x !== wert));
+    const ids = l => l.map(x => x.id);
+    const ziel = { g: r.eins(["boy","girl"]), hobby: r.eins(ids(st.hobbys)), tier: r.eins(ids(st.tiere)), pet: r.eins(ids(st.haustiere)), ziel: true };
+    const aendern = {
+      g: k => { k.g = k.g === "boy" ? "girl" : "boy"; },
+      hobby: k => { k.hobby = andere(ids(st.hobbys), k.hobby); },
+      tier: k => { k.tier = andere(ids(st.tiere), k.tier); },
+      pet: k => { k.pet = andere(ids(st.haustiere), k.pet); }
+    };
+    const profile = [ziel];
+    let verneint = null, merkmale = Object.keys(aendern);
+    if (stufe === 2){
+      verneint = andere(ids(st.hobbys), ziel.hobby);
+      profile.push({ ...ziel, hobby: verneint, ziel: false });
+      merkmale = ["g", "tier", "pet"];                       // Hobby wird nur verneint beschrieben
+    }
+    const reihe = r.mischen(merkmale); let i = 0;
+    while (profile.length < n){
+      const k = { ...ziel, ziel: false };
+      if (stufe === 0) r.mischen(merkmale).slice(0, 2).forEach(m => aendern[m](k));
+      else { aendern[reihe[i % reihe.length]](k); i++; }
+      profile.push(k);
+    }
+    const jungen = r.mischen(st.jungen), maedchen = r.mischen(st.maedchen);
+    profile.forEach(k => { k.name = (k.g === "boy" ? jungen : maedchen).pop(); });
+    const er = ziel.g === "boy" ? "He" : "She", sein = ziel.g === "boy" ? "His" : "Her";
+    const finde = (l, id) => l.find(x => x.id === id);
+    const notiz = [st.notizAnfang, "It's a " + ziel.g + "."];
+    if (stufe === 2) notiz.push(er + " " + finde(st.hobbys, verneint).neg + ".");
+    else notiz.push(er + " " + finde(st.hobbys, ziel.hobby).en + ".");
+    notiz.push(er + " likes " + finde(st.tiere, ziel.tier).en + ".", sein + " pet is " + finde(st.haustiere, ziel.pet).en + ".");
+    return { profile: r.mischen(profile), zielName: ziel.name, notiz };
+  }
 };
 
 /* Ganze Mission erzeugen: alle Stationen + Funkcodes + Finale-Code */

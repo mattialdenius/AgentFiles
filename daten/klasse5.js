@@ -50,7 +50,11 @@ AGENT_FILES.klassen[5] = {
     ["his / her", "sein(e) / ihr(e)"],
     ["isn't (= is not)", "ist nicht"],
     ["note", "Notiz, Zettel"],
-    ["Mission complete!", "Mission erfüllt!"]
+    ["Mission complete!", "Mission erfüllt!"],
+    ["pound(s)", "Pfund (Geld in Großbritannien)"],
+    ["calendar", "Kalender"],
+    ["Two or three?", "Zwei oder drei?"],
+    ["doesn't (= does not)", "nicht (bei he/she/it)"]
   ],
 
   /* ---------- Debriefing am Missionsende (Selbsteinschätzung, wird nicht gespeichert) ---------- */
@@ -287,6 +291,199 @@ AGENT_FILES.klassen[5] = {
           "Station 2: HQ soll die Möbel-Checkliste der Reihe nach abarbeiten – sonst wird wild geraten (nach 2 Fehlversuchen 30 Sekunden Alarm)",
           "Station 3: Bei drei Sternen enthält die Notiz eine Verneinung („Her bag isn't purple.“) – genau lesen!",
           "Finale: Zuerst die Zahlen der Field Agents, dann die von HQ"
+        ]
+      }
+    },
+
+    /* =================================================================
+       MISSION 2: THE BIRTHDAY SURPRISE (Unit 3–4)
+       simple present (he/she -s, does, doesn't), Uhrzeiten, Monate,
+       Ordnungszahlen bis thirteenth, Zahlen bis 100, Einkaufen
+       ================================================================= */
+    {
+      id: "birthday",
+      titel: "The Birthday Surprise",
+      briefing: {
+        en: [
+          "Hello, agents! It's me, Biscuit.",
+          "On Saturday it's Professor Plum's birthday! Let's plan a surprise party for him.",
+          "Find the date and the time, do the shopping and find his friend. But don't tell the professor!",
+          "Are you ready? Let's go!"
+        ],
+        de: "Biscuit plant eine Überraschungsparty für Professor Plum. Findet Datum und Uhrzeit heraus, kauft ein und ladet seinen Freund oder seine Freundin ein."
+      },
+      stationen: [
+
+        /* ---------- Station 1: Datum im Kalender ---------- */
+        {
+          baustein: "kalender",
+          loeser: "field",
+          titel: "The date",
+          aufgabe: {
+            field: "HQ weiß, wann Professor Plum Geburtstag hat. Fragt nach und tippt im Kalender Monat und Tag an.",
+            hq: "Findet in eurer Akte heraus, wann Professor Plum Geburtstag hat, und sagt es den Field Agents."
+          },
+          monate: ["January","February","March","April","May","June","July","August","September","October","November","December"],
+          ordnungszahlen: ["first","second","third","fourth","fifth","sixth","seventh","eighth","ninth","tenth","eleventh","twelfth","thirteenth"],
+          zahlen: ["one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"],
+          hauptperson: "Professor Plum",
+          personen: ["Biscuit", "Mrs Green", "Tom"],
+          saetze: [
+            ["When is his birthday?", "It's on the ninth of October.", "What month is it?"],
+            ["When is …?", "It's on the …", "How do you spell it?"],
+            ["birthday – month – day"]
+          ]
+        },
+
+        /* ---------- Station 2: Uhrzeit aus dem Tagesablauf ---------- */
+        {
+          baustein: "uhr",
+          loeser: "hq",
+          titel: "The time",
+          aufgabe: {
+            field: "Ihr habt Professor Plums Tagesablauf. HQ fragt euch nach einer Uhrzeit – sagt sie auf Englisch.",
+            hq: "Lest den Auftrag. Fragt die Field Agents nach der Uhrzeit und stellt sie auf der Uhr ein."
+          },
+          ueberschrift: "Professor Plum's Saturday",
+          auftrag: "The party is on Saturday. It is when Professor Plum comes home.",
+          // Zeitfenster (24 Std.), in Viertelstunden-Schritten; Reihenfolge = Tagesablauf
+          taetigkeiten: [
+            { id: "up",        en: "He gets up",                     icon: "⏰", von: [6, 0],  bis: [7, 0] },
+            { id: "breakfast", en: "He has breakfast",               icon: "🥣", von: [7, 15], bis: [8, 0] },
+            { id: "zoo",       en: "He goes to the zoo",             icon: "🦓", von: [8, 15], bis: [9, 0] },
+            { id: "penguins",  en: "He feeds the penguins",          icon: "🐧", von: [9, 30], bis: [11, 0] },
+            { id: "lunch",     en: "He has lunch",                   icon: "🍽️", von: [12, 0], bis: [13, 0] },
+            { id: "cage",      en: "He cleans the elephant cage",    icon: "🐘", von: [14, 0], bis: [15, 30] },
+            { id: "tea",       en: "He has tea at the café",         icon: "☕", von: [16, 0], bis: [16, 45] },
+            { id: "home",      en: "He comes home",                  icon: "🏠", von: [17, 0], bis: [18, 45] }
+          ],
+          zielId: "home",
+          falleTag: "On Mondays he comes home",   // nur bei Rot: Ablenker
+          saetze: [
+            ["When does he come home?", "He comes home at half past five.", "Is it quarter past or quarter to?"],
+            ["When does he …?", "He … at …", "What time is it?"],
+            ["come home – time – Saturday"]
+          ]
+        },
+
+        /* ---------- Station 3: Einkaufen im corner shop ---------- */
+        {
+          baustein: "laden",
+          loeser: "hq",
+          titel: "The corner shop",
+          aufgabe: {
+            field: "Ihr seid im Laden. HQ liest euch die Einkaufsliste vor. Tippt die Sachen an, bis alles in der Tasche ist. Dann sagt HQ den Preis.",
+            hq: "Lest den Field Agents die Einkaufsliste vor. Wenn sie euch den Preis sagen, tippt ihn ein."
+          },
+          // Produkte: art = a/an, menge = mögliche Anzahlen, preis = Pfund pro Stück (von–bis)
+          produkte: [
+            { id: "cake",           art: "a",  en: "cake",               plural: "cakes",               de: "Kuchen",           emoji: "🎂", menge: [1, 2],         preis: [6, 12] },
+            { id: "candle",         art: "a",  en: "candle",             plural: "candles",             de: "Kerze",            emoji: "🕯️", menge: [6, 8, 10, 12], preis: [1, 1] },
+            { id: "balloon",        art: "a",  en: "balloon",            plural: "balloons",            de: "Luftballon",       emoji: "🎈", menge: [5, 6, 8, 10],  preis: [1, 2] },
+            { id: "pizza",          art: "a",  en: "pizza",              plural: "pizzas",              de: "Pizza",            emoji: "🍕", menge: [1, 2, 3],      preis: [5, 9] },
+            { id: "orange",         art: "an", en: "orange",             plural: "oranges",             de: "Orange",           emoji: "🍊", menge: [4, 5, 6],      preis: [1, 1] },
+            { id: "sandwich",       art: "a",  en: "sandwich",           plural: "sandwiches",          de: "Sandwich",         emoji: "🥪", menge: [2, 3, 4],      preis: [2, 4] },
+            { id: "icecream",       art: "an", en: "ice cream",          plural: "ice creams",          de: "Eis",              emoji: "🍦", menge: [2, 3, 4],      preis: [2, 3] },
+            { id: "lemonadeBottle", art: "a",  en: "bottle of lemonade", plural: "bottles of lemonade", de: "Flasche Limonade", form: "bottle", farbe: "#f7e463", menge: [1, 2, 3], preis: [2, 4] },
+            { id: "lemonadeCan",    art: "a",  en: "can of lemonade",    plural: "cans of lemonade",    de: "Dose Limonade",    form: "can",    farbe: "#f7e463", menge: [2, 4, 6], preis: [1, 2] },
+            { id: "crisps",         art: "a",  en: "packet of crisps",   plural: "packets of crisps",   de: "Tüte Chips",       form: "packet", farbe: "#e85d3a", emoji: "🥔", menge: [1, 2, 3], preis: [1, 3] },
+            { id: "chocolate",      art: "a",  en: "bar of chocolate",   plural: "bars of chocolate",   de: "Tafel Schokolade", form: "bar",    farbe: "#7a4a24", menge: [1, 2, 3], preis: [1, 3] },
+            { id: "biscuitsPacket", art: "a",  en: "packet of biscuits", plural: "packets of biscuits", de: "Packung Kekse",    form: "packet", farbe: "#2fb7b3", emoji: "🍪", menge: [1, 2], preis: [2, 4] },
+            { id: "biscuitsBox",    art: "a",  en: "box of biscuits",    plural: "boxes of biscuits",   de: "Schachtel Kekse",  form: "box",    farbe: "#8e44ad", emoji: "🍪", menge: [1, 2], preis: [4, 7] }
+          ],
+          einfach: ["cake", "candle", "balloon", "pizza", "orange", "sandwich", "icecream"],
+          zwillinge: [["lemonadeBottle", "lemonadeCan"], ["biscuitsPacket", "biscuitsBox"]],
+          anzahlListe: [3, 4, 5],
+          regalGroesse: [6, 8, 10],
+          listenTitel: "Shopping list",
+          saetze: [
+            ["We need two cakes.", "Two or three?", "How much is it?", "It's forty-seven pounds."],
+            ["We need …", "A bottle or a can?", "How much is it?"],
+            ["bottle – can – packet – box – bar – pounds"]
+          ]
+        },
+
+        /* ---------- Station 4: Gäste – Professor Plums Freund/in finden ---------- */
+        {
+          baustein: "gaeste",
+          loeser: "field",
+          titel: "The guest",
+          aufgabe: {
+            field: "Ihr seht mehrere Kinder. HQ hat eine Notiz von Biscuit. Fragt nach und tippt Professor Plums Freund oder Freundin an.",
+            hq: "Lest den Field Agents die Notiz vor und beantwortet ihre Fragen."
+          },
+          hobbys: [
+            { id: "football",   en: "plays football",       neg: "doesn't play football",       emoji: "⚽", de: "Fußball" },
+            { id: "tennis",     en: "plays tennis",         neg: "doesn't play tennis",         emoji: "🎾", de: "Tennis" },
+            { id: "basketball", en: "plays basketball",     neg: "doesn't play basketball",     emoji: "🏀", de: "Basketball" },
+            { id: "volleyball", en: "plays volleyball",     neg: "doesn't play volleyball",     emoji: "🏐", de: "Volleyball" },
+            { id: "chess",      en: "plays chess",          neg: "doesn't play chess",          emoji: "♟️", de: "Schach" },
+            { id: "games",      en: "plays computer games", neg: "doesn't play computer games", emoji: "🎮", de: "Computerspiele" }
+          ],
+          tiere: [
+            { id: "penguin",  en: "penguins",  emoji: "🐧", de: "Pinguine" },
+            { id: "lion",     en: "lions",     emoji: "🦁", de: "Löwen" },
+            { id: "elephant", en: "elephants", emoji: "🐘", de: "Elefanten" },
+            { id: "giraffe",  en: "giraffes",  emoji: "🦒", de: "Giraffen" },
+            { id: "snake",    en: "snakes",    emoji: "🐍", de: "Schlangen" },
+            { id: "parrot",   en: "parrots",   emoji: "🦜", de: "Papageien" },
+            { id: "monkey",   en: "monkeys",   emoji: "🐒", de: "Affen" }
+          ],
+          haustiere: [
+            { id: "dog",   en: "a dog",   emoji: "🐶", de: "Hund" },
+            { id: "cat",   en: "a cat",   emoji: "🐱", de: "Katze" },
+            { id: "fish",  en: "a fish",  emoji: "🐟", de: "Fisch" },
+            { id: "bird",  en: "a bird",  emoji: "🐦", de: "Vogel" },
+            { id: "mouse", en: "a mouse", emoji: "🐭", de: "Maus" }
+          ],
+          jungen: ["TOM", "BEN", "SAM", "JACK", "LEO", "MAX"],
+          maedchen: ["AMY", "LILY", "MIA", "EMMA", "ZOE", "ANNA"],
+          anzahlProfile: [4, 6, 6],
+          notizTitel: "Biscuit's note",
+          notizAnfang: "Please invite Professor Plum's friend to the party!",
+          saetze: [
+            ["Is it a boy or a girl?", "Does she play tennis?", "What's her pet?", "Her pet is a cat."],
+            ["Is it a …?", "Does he/she …?", "What's his/her …?"],
+            ["boy – girl – plays – likes – pet – doesn't"]
+          ]
+        },
+
+        /* ---------- Finale ---------- */
+        {
+          baustein: "finale",
+          loeser: "beide",
+          titel: "The party box",
+          aufgabe: {
+            field: "Sagt HQ eure zwei Zahlen. HQ sagt euch seine. Gebt den Code ein: zuerst die Zahlen der Field Agents, dann die von HQ.",
+            hq: "Sagt den Field Agents eure zwei Zahlen. Sie sagen euch ihre. Gebt den Code ein: zuerst die Zahlen der Field Agents, dann eure."
+          },
+          saetze: [
+            ["Our numbers are four and seven.", "What are your numbers?", "Again, please."],
+            ["Our numbers are …", "What are …?"],
+            ["numbers"]
+          ]
+        }
+      ],
+      ende: {
+        en: "Mission complete! The party is ready. Well done, agents!",
+        de: "Die Überraschungsparty kann beginnen. Super Teamarbeit!"
+      },
+      lehrer: {
+        dauer: "ca. 20–25 Minuten (4 Stationen + Finale)",
+        ziel: "Informationen austauschen: Datum, Uhrzeit, Einkaufsliste und Preise, Personen anhand von Hobbys und Vorlieben beschreiben.",
+        sprache: "simple present mit -s (he gets up, he goes, he has), Fragen mit does, Verneinung mit doesn't, he/she, his/her; Monate, Ordnungszahlen first–thirteenth, Uhrzeiten (o'clock, quarter past, half past, quarter to), Zahlen bis 100, Einkaufen (bottle, can, packet, box, bar)",
+        vorher: [
+          "Ordnungszahlen und Monate wiederholen (When is your birthday? – It's on the …)",
+          "Uhrzeiten an einer Uhr üben, besonders quarter to (= Viertel vor) und half past (= halb – half past five ist 5:30!)",
+          "Zehnerzahlen sicher sprechen (forty-seven, seventy-four)",
+          "Verpackungen: bottle, can, packet, box, bar"
+        ],
+        stolper: [
+          "Station 1: Ordnungszahlen mit Sonderform (first, second, third, fifth, eighth, ninth, twelfth)",
+          "Station 2: half past five = halb sechs! Bei drei Sternen steht auch, wann er montags nach Hause kommt – gefragt ist Samstag",
+          "Station 3: Bei drei Sternen stehen ähnliche Sachen im Regal (bottle/can of lemonade, packet/box of biscuits). Der Preis ist ein Zehnerwert bis 99",
+          "Station 4: Bei drei Sternen enthält die Notiz eine Verneinung (He doesn't play chess.)",
+          "Finale: zuerst die Zahlen der Field Agents (aus Station 1), dann die von HQ (aus Station 3)"
         ]
       }
     }

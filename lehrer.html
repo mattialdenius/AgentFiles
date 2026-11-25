@@ -3,11 +3,13 @@
   =====================================================================
   AGENT FILES – LEHRER-SEITE
   =====================================================================
-  Version: v0.2.0 · Autor: M. Aldenius (mit Claude)
+  Version: v0.3.0 · Autor: M. Aldenius (mit Claude)
   Nur für Lehrkräfte (Link wird im Spiel nicht angezeigt).
 
   Änderungsliste
   --------------
+  v0.3.0 (25.11.2026) – Mission „The Birthday Surprise“: Lösungen,
+    Druckversion und Lehrerblatt
   v0.2.0 (25.11.2026) – neu: Lösungen zu einer Missionsnummer,
     Druckversion der HQ-Unterlagen, Lehrerblatt
 
@@ -76,7 +78,7 @@ ul{margin:4px 0;padding-left:22px}
 </style>
 </head>
 <body>
-<header><h1>Agent Files · Lehrer-Seite</h1><p>Nur für Lehrkräfte · v0.2.0 · Es wird nichts gespeichert.</p></header>
+<header><h1>Agent Files · Lehrer-Seite</h1><p>Nur für Lehrkräfte · v0.3.0 · Es wird nichts gespeichert.</p></header>
 <nav>
   <button data-tab="loesung" class="an">Lösungen</button>
   <button data-tab="druck">Druckversion HQ</button>
@@ -133,6 +135,10 @@ function loesungHTML(sp){
     if (st.baustein === "zimmer") l = `Verschoben:<ul>${r.bewegt.map(id => { const v = r.vorher.find(x => x.id === id), n = r.nachher.find(x => x.id === id);
         return `<li><b>${dingText(st, v)}</b>: ${platzText(st, v.platz)} → ${platzText(st, n.platz)}</li>`; }).join("")}</ul>Zahlen der Field Agents fürs Finale: ${code(r.codeTeil)}`;
     if (st.baustein === "kinder") l = `Kind: <b>${r.zielName}</b><br><i>${r.notiz.slice(1).join(" ")}</i><br>Zahlen von HQ fürs Finale: ${code(r.codeTeil)}`;
+    if (st.baustein === "kalender") l = `Datum: <b>the ${st.ordnungszahlen[r.tag - 1]} of ${st.monate[r.monat]}</b> (${r.tag}. ${st.monate[r.monat]})<br>Zahlen der Field Agents fürs Finale: ${code(r.codeTeil)}`;
+    if (st.baustein === "uhr") l = `Uhrzeit: <b>${zeitWort(r.ziel.h, r.ziel.m)}</b> (${r.ziel.h}:${String(r.ziel.m).padStart(2, "0")} Uhr)${r.falle ? `<br><small>Ablenker: ${r.falle.tag} at ${zeitWort(r.falle.h, r.falle.m)}</small>` : ""}`;
+    if (st.baustein === "laden") l = `Einkauf: ${r.liste.map(x => { const pr = st.produkte.find(q => q.id === x.id); return `${x.anzahl} × ${x.anzahl === 1 ? pr.en : pr.plural} (£${x.preis})`; }).join(", ")}<br>Preis: <b>${r.gesamt} pounds</b> (${zahlWort(r.gesamt)})<br>Zahlen von HQ fürs Finale: ${code(r.codeTeil)}`;
+    if (st.baustein === "gaeste") l = `Kind: <b>${r.zielName}</b><br><i>${r.notiz.slice(1).join(" ")}</i>`;
     if (st.baustein === "finale") l = `Code für die Box: <b class="code">${sp.codeField.concat(sp.codeHQ).join(" ")}</b> (erst Field Agents, dann HQ)`;
     const fc = st.loeser === "beide" ? "–" : `${code(r.funkcode)}<br><small>${st.loeser === "field" ? "Field → HQ" : "HQ → Field"}</small>`;
     h += `<tr><td>${i + 1}. ${st.titel}</td><td>${l}</td><td>${fc}</td></tr>`;
@@ -203,8 +209,29 @@ function blattHTML(sp){
         <p>Name on the bag: <span class="schreiblinie"></span></p>
         <p>Sucht den Namen in der Tabelle. Sagt den Field Agents den Funkcode. Die zwei Zahlen sind <b>eure Zahlen fürs Finale</b> – merkt sie euch!</p>
         ${tabelle(r.kinder.map(k => k.name), r.zielName, ["Name", "Radio code", "Your numbers"], [r.funkcode, r.codeTeil])}`;
+    if (st.baustein === "kalender"){
+      const hz = r.hq;
+      x = `<p>${st.aufgabe.hq}</p><div class="akte-text">${hz.art === "liste" ? `<b>BIRTHDAYS</b><table>${hz.zeilen.map(([pp, d]) => `<tr><td>${pp}</td><td><b>${d}</b></td></tr>`).join("")}</table>` : hz.zeilen.join("<br>")}</div>${funkVonField}`;
+    }
+    if (st.baustein === "uhr"){
+      const optionen = r.zeiten.map(z => zeitWort(z.h, z.m)).concat(r.falle ? [zeitWort(r.falle.h, r.falle.m)] : []);
+      x = `<p><b>Your job:</b> <span class="akte-text">${st.auftrag}</span></p>
+        <p>Fragt die Field Agents nach der Uhrzeit. Schreibt sie auf: <span class="schreiblinie"></span></p>
+        <p>Sucht die Uhrzeit in der Tabelle und sagt den Field Agents den Funkcode.</p>${tabelle([...new Set(optionen)], zeitWort(r.ziel.h, r.ziel.m), ["Time", "Radio code"], [r.funkcode])}`;
+    }
+    if (st.baustein === "laden"){
+      const pr = id => st.produkte.find(q => q.id === id);
+      const betraege = new Set([r.gesamt]);
+      while (betraege.size < 6){ const b2 = r.gesamt + (Math.floor(Math.random() * 41) - 20); if (b2 >= 10 && b2 <= 99) betraege.add(b2); }
+      x = `<p>${st.aufgabe.hq.replace("tippt ihn ein", "schreibt ihn auf")}</p><div class="akte-text"><b>${st.listenTitel.toUpperCase()}</b><br>${r.liste.map(z => "– " + (z.anzahl === 1 ? pr(z.id).art + " " + pr(z.id).en : EINER[z.anzahl] + " " + pr(z.id).plural)).join("<br>")}</div>
+        <p>Price: <span class="schreiblinie" style="min-width:120px"></span> pounds</p>
+        <p>Sucht den Preis in der Tabelle. Sagt den Field Agents den Funkcode. Die zwei Zahlen sind <b>eure Zahlen fürs Finale</b> – merkt sie euch!</p>
+        ${tabelle([...betraege].map(String), String(r.gesamt), ["Pounds", "Radio code", "Your numbers"], [r.funkcode, r.codeTeil])}`;
+    }
+    if (st.baustein === "gaeste")
+      x = `<p>${st.aufgabe.hq}</p><div class="akte-text"><b>${st.notizTitel}</b><br>${r.notiz.join("<br>")}</div>${funkVonField}`;
     if (st.baustein === "finale")
-      x = `<p>Sagt den Field Agents eure zwei Zahlen aus Station 3. Die Field Agents sagen euch ihre Zahlen und geben den Code auf dem iPad ein.</p>`;
+      x = `<p>Sagt den Field Agents eure zwei Zahlen${sp.mission.id === "hamster" ? " aus Station 3" : ""}. Die Field Agents sagen euch ihre Zahlen und geben den Code auf dem iPad ein.</p>`;
     const nr = sp.missionIndex === 0 ? "Training " + (i + 1) : (st.baustein === "finale" ? "Finale" : "Station " + (i + 1));
     h += `<div class="station"><h3>${nr} – ${st.titel}</h3>${x}${phr}</div>`;
   });
