@@ -3,11 +3,16 @@
   =====================================================================
   AGENT FILES – Englisch-Informationslücken-Spiel (Realschule BW)
   =====================================================================
-  Version: v0.1.0
+  Version: v0.1.1
   Autor:   M. Aldenius (mit Claude)
 
   Änderungsliste
   --------------
+  v0.1.1 (25.11.2026) – Rückmeldungen aus dem ersten Test
+    - Fehler behoben: Ziffern im Funkcode-Feld waren unsichtbar
+    - Aufgabentext größer und deutlicher (Kasten „Auftrag“)
+    - Raten begrenzt: Zimmer 2 / Schulhof 1 Fehlversuch, danach
+      „Alarm“ mit 30 Sekunden Sperre
   v0.1.0 (25.11.2026) – Erster Prototyp (Phase 1)
     - Startbildschirm im Comic-Design (Klassen-Drehschloss, Rollen
       Field Agents / HQ, Ampel mit Sternen, Missionsnummer)
@@ -139,7 +144,8 @@ body.hq footer{color:rgba(255,240,210,.85)}
   font-family:var(--f-titel);font-weight:900;font-size:clamp(1.2rem,3.4vw,1.9rem);text-transform:uppercase;transform:rotate(-1deg);box-shadow:0 4px 0 var(--navy-dunkel)}
 .sprecher{background:var(--navy);color:#fff;border:3px solid var(--navy-dunkel);border-radius:10px;padding:6px 10px;font-family:var(--f-titel);font-weight:900;font-size:1rem;flex:none}
 body.hq .sprecher{background:var(--koralle)}
-.aufgabe{background:rgba(247,241,227,.95);border:3px solid var(--navy-dunkel);border-radius:14px;padding:10px 14px;margin-bottom:14px;font-size:1.05rem;line-height:1.35}
+.aufgabe{background:#fff7d6;border:4px solid var(--navy-dunkel);border-left:14px solid var(--gelb);border-radius:14px;padding:12px 16px;margin-bottom:14px;font-size:clamp(1.25rem,2.6vw,1.5rem);font-weight:600;line-height:1.35;box-shadow:0 5px 0 var(--navy-dunkel)}
+.aufgabe .marke{display:inline-block;background:var(--navy);color:#fff;border-radius:8px;padding:0 8px;margin-right:8px;font-family:var(--f-titel);font-weight:900;text-transform:uppercase;font-size:.85em}
 .aufgabe b{font-family:var(--f-titel);text-transform:uppercase}
 
 /* Agenten-Gerät (Field Agents) */
@@ -169,7 +175,7 @@ body.hq .sprecher{background:var(--koralle)}
 
 /* Tastaturen */
 .anzeige{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:6px 0 12px;min-height:56px}
-.feld{width:44px;height:54px;border:3px solid var(--navy-dunkel);border-radius:8px;background:#fff;font-family:var(--f-titel);font-weight:900;font-size:2rem;
+.feld{width:44px;height:54px;border:3px solid var(--navy-dunkel);border-radius:8px;background:#fff;color:var(--navy-dunkel);font-family:var(--f-titel);font-weight:900;font-size:2rem;
   display:flex;align-items:center;justify-content:center}
 .feld.aktiv{border-color:var(--koralle);box-shadow:0 0 0 3px rgba(232,93,58,.35)}
 .feld.fest{border:none;background:none;width:18px}
@@ -244,7 +250,7 @@ svg.szene{width:100%;height:auto;display:block;border:3px solid var(--navy-dunke
 </head>
 <body>
 <div id="app"></div>
-<footer>Agent Files · v0.1.0 · M. Aldenius</footer>
+<footer>Agent Files · v0.1.1 · M. Aldenius</footer>
 
 <!-- Inhalte (eine Datei pro Klasse) -->
 <script src="daten/klasse5.js"></script>
@@ -254,7 +260,9 @@ svg.szene{width:100%;height:auto;display:block;border:3px solid var(--navy-dunke
 /* =====================================================================
    1) EINSTELLUNGEN
    ===================================================================== */
-const VERSION = "v0.1.0";
+const VERSION = "v0.1.1";
+/* Raten begrenzen: erlaubte Fehlversuche pro Station, danach Alarm-Sperre */
+const RATEN = { zimmer: 2, kinder: 1, sperreSekunden: 30 };
 const KLASSEN_ANGEBOT = [5, 6, 7, 8];          // Drehschloss
 const STERNE = ["★", "★★", "★★★"];
 const ZAHLWORT = ["zero","one","two","three","four","five","six","seven","eight","nine"];
@@ -598,6 +606,19 @@ function erklaeren(art, danach){
   setTimeout(() => { k.disabled = false; }, 1800);
   k.onclick = () => { o.remove(); if (danach) danach(); };
 }
+/* Alarm-Sperre bei zu viel Raten */
+function alarm(tipp, danach){
+  let rest = RATEN.sperreSekunden;
+  const o = html(`<div class="overlay"><div class="dialog fehler"><h2>🚨 Alarm!</h2>
+    <p class="hinweis">Ihr habt zu oft geraten. Das Gerät ist für <b data-z>${rest}</b> Sekunden gesperrt.</p>
+    <div class="beispiel">Sprecht in der Zeit mit dem anderen Team:<br>${tipp}</div>
+    <div class="knopfreihe"><button class="knopf" disabled>Weiter</button></div></div></div>`);
+  document.body.appendChild(o);
+  const k = o.querySelector("button"), z = o.querySelector("[data-z]");
+  const uhr = setInterval(() => { rest--; z.textContent = rest; if (rest <= 0){ clearInterval(uhr); k.disabled = false; } }, 1000);
+  k.onclick = () => { o.remove(); if (danach) danach(); };
+}
+function versucheText(uebrig, max){ return "Tries: " + "●".repeat(uebrig) + "○".repeat(max - uebrig); }
 function fragen(text, jaText, ja){
   const o = html(`<div class="overlay"><div class="dialog"><h2>Sicher?</h2><p class="hinweis">${text}</p>
     <div class="knopfreihe"><button class="knopf papier" data-n>Nein</button><button class="knopf koralle" data-j>${jaText}</button></div></div></div>`);
@@ -826,7 +847,7 @@ function zeigeStation(){
   const s = html(`<div>
     <div class="kopf"><button class="raus" aria-label="abbrechen">✕</button><div class="banner">${nr} – ${def.titel}</div>
       <div class="sprecher">Speaker: Agent ${(Z.station % 2) + 1}</div></div>
-    <div class="aufgabe">${def.aufgabe[Z.rolle]}</div>
+    <div class="aufgabe"><span class="marke">Auftrag</span>${def.aufgabe[Z.rolle]}</div>
     <div data-fort></div>
     <div data-rahmen></div>
   </div>`);
@@ -919,10 +940,11 @@ const ANSICHT = {
     field(c){
       const gefunden = [];
       const D = c.r.bewegt.length;
+      let uebrig = RATEN.zimmer;
       const zeichnen = () => {
         c.inhalt.innerHTML = "";
         c.inhalt.appendChild(html(`<div>${zimmerSVG(c.r.nachher, c.def, c.def.beschriftet[c.stufe], gefunden)}
-          <div class="zaehler">Found: ${gefunden.length} / ${D}</div></div>`));
+          <div class="zaehler">Found: ${gefunden.length} / ${D} &nbsp;·&nbsp; ${versucheText(uebrig, RATEN.zimmer)}</div></div>`));
         c.inhalt.querySelectorAll(".ding").forEach(g => g.addEventListener("click", () => {
           const id = g.dataset.id;
           if (gefunden.includes(id)) return;
@@ -930,7 +952,8 @@ const ANSICHT = {
             gefunden.push(id);
             if (gefunden.length === D) c.geloest(c.def.hinweisDanach.en + "<br><span class='de'>" + c.def.hinweisDanach.de + "</span>");
             else zeichnen();
-          } else erklaeren("zimmer");
+          } else if (uebrig > 0){ uebrig--; zeichnen(); erklaeren("zimmer"); }
+          else { uebrig = RATEN.zimmer; alarm("Is the lamp on the table? – Where is the bag?", zeichnen); }
         }));
       };
       zeichnen();
@@ -945,14 +968,16 @@ const ANSICHT = {
   kinder: {
     field(c){
       let gezeigt = null;
+      let uebrig = RATEN.kinder;
       const zeichnen = () => {
         c.inhalt.innerHTML = "";
         c.inhalt.appendChild(html(`<div>${schulhofSVG(c.r.kinder, gezeigt)}
-          <div class="zaehler">${gezeigt ? "There's a name on the bag: " + gezeigt + "<br><span class='de'>Buchstabiert HQ diesen Namen.</span>" : "Who is with Biscuit? Tap the kid."}</div></div>`));
+          <div class="zaehler">${gezeigt ? "There's a name on the bag: " + gezeigt + "<br><span class='de'>Buchstabiert HQ diesen Namen.</span>" : "Who is with Biscuit? Tap the kid. &nbsp;·&nbsp; " + versucheText(uebrig, RATEN.kinder)}</div></div>`));
         c.inhalt.querySelectorAll(".kind").forEach(g => g.addEventListener("click", () => {
           if (gezeigt) return;
           if (g.dataset.name === c.r.zielName){ gezeigt = c.r.zielName; zeichnen(); }
-          else erklaeren("kinder");
+          else if (uebrig > 0){ uebrig--; zeichnen(); erklaeren("kinder"); }
+          else { uebrig = RATEN.kinder; alarm("Is it a boy or a girl? – What colour is her T-shirt?", zeichnen); }
         }));
       };
       zeichnen();
