@@ -1,6 +1,6 @@
 AGENT FILES – Englisch-Informationslücken-Spiel (Realschule BW)
 ================================================================
-Version: v0.1.1 (Prototyp, Phase 1) · Autor: M. Aldenius
+Version: v0.1.2 (Prototyp, Phase 1) · Autor: M. Aldenius
 
 WORUM GEHT ES?
 Zwei Teams spielen an zwei verschiedenen iPads: „Field Agents“ und „HQ“.

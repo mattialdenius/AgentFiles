@@ -3,11 +3,14 @@
   =====================================================================
   AGENT FILES – Englisch-Informationslücken-Spiel (Realschule BW)
   =====================================================================
-  Version: v0.1.1
+  Version: v0.1.2
   Autor:   M. Aldenius (mit Claude)
 
   Änderungsliste
   --------------
+  v0.1.2 (25.11.2026) – Rückmeldung aus dem Praxistest
+    - Alarm-Sperre als schmale Leiste oben statt Fenster in der Mitte:
+      das Bild bleibt sichtbar, damit die Schüler nachfragen können
   v0.1.1 (25.11.2026) – Rückmeldungen aus dem ersten Test
     - Fehler behoben: Ziffern im Funkcode-Feld waren unsichtbar
     - Aufgabentext größer und deutlicher (Kasten „Auftrag“)
@@ -226,6 +229,13 @@ body.hq .sprecher{background:var(--koralle)}
 .satzliste li{background:#fff;border:2px solid #d6ccb4;border-radius:10px;padding:8px 12px;margin:6px 0;font-size:1.15rem}
 .wort-zeile{display:flex;justify-content:space-between;border-bottom:1px solid #d6ccb4;padding:6px 2px;font-size:1.05rem}
 
+/* Alarm-Leiste */
+.alarm-leiste{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;gap:12px;padding:8px 14px;
+  background:var(--koralle);color:#fff;border-bottom:4px solid var(--navy-dunkel);box-shadow:0 4px 0 rgba(0,0,0,.25);font-size:1.1rem;line-height:1.3}
+.alarm-titel{font-family:var(--f-titel);font-weight:900;text-transform:uppercase;font-size:1.5rem;flex:none}
+.alarm-text b{font-size:1.3rem}
+.gesperrt svg.szene{outline:5px solid var(--koralle);outline-offset:-2px}
+
 /* Briefing */
 .briefing{display:grid;grid-template-columns:200px 1fr;gap:18px;align-items:center}
 @media (max-width:700px){.briefing{grid-template-columns:1fr}.briefing svg{max-width:160px;margin:0 auto}}
@@ -250,7 +260,7 @@ svg.szene{width:100%;height:auto;display:block;border:3px solid var(--navy-dunke
 </head>
 <body>
 <div id="app"></div>
-<footer>Agent Files · v0.1.1 · M. Aldenius</footer>
+<footer>Agent Files · v0.1.2 · M. Aldenius</footer>
 
 <!-- Inhalte (eine Datei pro Klasse) -->
 <script src="daten/klasse5.js"></script>
@@ -260,7 +270,7 @@ svg.szene{width:100%;height:auto;display:block;border:3px solid var(--navy-dunke
 /* =====================================================================
    1) EINSTELLUNGEN
    ===================================================================== */
-const VERSION = "v0.1.1";
+const VERSION = "v0.1.2";
 /* Raten begrenzen: erlaubte Fehlversuche pro Station, danach Alarm-Sperre */
 const RATEN = { zimmer: 2, kinder: 1, sperreSekunden: 30 };
 const KLASSEN_ANGEBOT = [5, 6, 7, 8];          // Drehschloss
@@ -591,7 +601,7 @@ const Z = {             // Zustand der laufenden Runde (wird NIRGENDS gespeicher
   spiel: null, station: 0, geloest: {}
 };
 function html(s){ const d = document.createElement("div"); d.innerHTML = s.trim(); return d.firstElementChild; }
-function leeren(){ app.innerHTML = ""; document.querySelectorAll(".overlay,.unten").forEach(e => e.remove()); }
+function leeren(){ app.innerHTML = ""; document.querySelectorAll(".overlay,.unten,.alarm-leiste").forEach(e => e.remove()); }
 function rolleKlasse(){ document.body.classList.toggle("hq", Z.rolle === "hq" && !!Z.spiel); }
 function codeSprechen(ziffern){ return ziffern.map(z => ZAHLWORT[z]).join(" – "); }
 
@@ -606,17 +616,20 @@ function erklaeren(art, danach){
   setTimeout(() => { k.disabled = false; }, 1800);
   k.onclick = () => { o.remove(); if (danach) danach(); };
 }
-/* Alarm-Sperre bei zu viel Raten */
-function alarm(tipp, danach){
+/* Alarm-Sperre bei zu viel Raten.
+   Schmale Leiste oben am Bildschirmrand – das Bild bleibt komplett sichtbar,
+   nur Antippen ist während der Sperre nicht möglich. */
+function alarm(tipp, fertig){
   let rest = RATEN.sperreSekunden;
-  const o = html(`<div class="overlay"><div class="dialog fehler"><h2>🚨 Alarm!</h2>
-    <p class="hinweis">Ihr habt zu oft geraten. Das Gerät ist für <b data-z>${rest}</b> Sekunden gesperrt.</p>
-    <div class="beispiel">Sprecht in der Zeit mit dem anderen Team:<br>${tipp}</div>
-    <div class="knopfreihe"><button class="knopf" disabled>Weiter</button></div></div></div>`);
-  document.body.appendChild(o);
-  const k = o.querySelector("button"), z = o.querySelector("[data-z]");
-  const uhr = setInterval(() => { rest--; z.textContent = rest; if (rest <= 0){ clearInterval(uhr); k.disabled = false; } }, 1000);
-  k.onclick = () => { o.remove(); if (danach) danach(); };
+  const l = html(`<div class="alarm-leiste"><div class="alarm-titel">🚨 Alarm!</div>
+    <div class="alarm-text">Zu oft geraten – gesperrt für <b data-z>${rest}</b> Sek. Fragt das andere Team: <i>${tipp}</i></div></div>`);
+  document.body.appendChild(l);
+  const z = l.querySelector("[data-z]");
+  const uhr = setInterval(() => {
+    if (!document.body.contains(l)){ clearInterval(uhr); return; }   // Station verlassen
+    rest--; z.textContent = rest;
+    if (rest <= 0){ clearInterval(uhr); l.remove(); if (fertig) fertig(); }
+  }, 1000);
 }
 function versucheText(uebrig, max){ return "Tries: " + "●".repeat(uebrig) + "○".repeat(max - uebrig); }
 function fragen(text, jaText, ja){
@@ -940,20 +953,21 @@ const ANSICHT = {
     field(c){
       const gefunden = [];
       const D = c.r.bewegt.length;
-      let uebrig = RATEN.zimmer;
+      let uebrig = RATEN.zimmer, gesperrt = false;
       const zeichnen = () => {
         c.inhalt.innerHTML = "";
         c.inhalt.appendChild(html(`<div>${zimmerSVG(c.r.nachher, c.def, c.def.beschriftet[c.stufe], gefunden)}
-          <div class="zaehler">Found: ${gefunden.length} / ${D} &nbsp;·&nbsp; ${versucheText(uebrig, RATEN.zimmer)}</div></div>`));
+          <div class="zaehler">Found: ${gefunden.length} / ${D} &nbsp;·&nbsp; ${gesperrt ? "🚨 gesperrt" : versucheText(uebrig, RATEN.zimmer)}</div></div>`));
+        c.inhalt.classList.toggle("gesperrt", gesperrt);
         c.inhalt.querySelectorAll(".ding").forEach(g => g.addEventListener("click", () => {
           const id = g.dataset.id;
-          if (gefunden.includes(id)) return;
+          if (gesperrt || gefunden.includes(id)) return;
           if (c.r.bewegt.includes(id)){
             gefunden.push(id);
             if (gefunden.length === D) c.geloest(c.def.hinweisDanach.en + "<br><span class='de'>" + c.def.hinweisDanach.de + "</span>");
             else zeichnen();
           } else if (uebrig > 0){ uebrig--; zeichnen(); erklaeren("zimmer"); }
-          else { uebrig = RATEN.zimmer; alarm("Is the lamp on the table? – Where is the bag?", zeichnen); }
+          else { gesperrt = true; zeichnen(); alarm("Is the lamp on the table? – Where is the bag?", () => { gesperrt = false; uebrig = RATEN.zimmer; zeichnen(); }); }
         }));
       };
       zeichnen();
@@ -968,16 +982,17 @@ const ANSICHT = {
   kinder: {
     field(c){
       let gezeigt = null;
-      let uebrig = RATEN.kinder;
+      let uebrig = RATEN.kinder, gesperrt = false;
       const zeichnen = () => {
         c.inhalt.innerHTML = "";
         c.inhalt.appendChild(html(`<div>${schulhofSVG(c.r.kinder, gezeigt)}
-          <div class="zaehler">${gezeigt ? "There's a name on the bag: " + gezeigt + "<br><span class='de'>Buchstabiert HQ diesen Namen.</span>" : "Who is with Biscuit? Tap the kid. &nbsp;·&nbsp; " + versucheText(uebrig, RATEN.kinder)}</div></div>`));
+          <div class="zaehler">${gezeigt ? "There's a name on the bag: " + gezeigt + "<br><span class='de'>Buchstabiert HQ diesen Namen.</span>" : "Who is with Biscuit? Tap the kid. &nbsp;·&nbsp; " + (gesperrt ? "🚨 gesperrt" : versucheText(uebrig, RATEN.kinder))}</div></div>`));
+        c.inhalt.classList.toggle("gesperrt", gesperrt);
         c.inhalt.querySelectorAll(".kind").forEach(g => g.addEventListener("click", () => {
-          if (gezeigt) return;
+          if (gezeigt || gesperrt) return;
           if (g.dataset.name === c.r.zielName){ gezeigt = c.r.zielName; zeichnen(); }
           else if (uebrig > 0){ uebrig--; zeichnen(); erklaeren("kinder"); }
-          else { uebrig = RATEN.kinder; alarm("Is it a boy or a girl? – What colour is her T-shirt?", zeichnen); }
+          else { gesperrt = true; zeichnen(); alarm("Is it a boy or a girl? – What colour is the T-shirt?", () => { gesperrt = false; uebrig = RATEN.kinder; zeichnen(); }); }
         }));
       };
       zeichnen();
