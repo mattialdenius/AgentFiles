@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<!--
+  =====================================================================
+  AGENT FILES – Englisch-Informationslücken-Spiel (Realschule BW)
+  =====================================================================
+  Version: v0.1.0
+  Autor:   M. Aldenius (mit Claude)
+
+  Änderungsliste
+  --------------
+  v0.1.0 (25.11.2026) – Erster Prototyp (Phase 1)
+    - Startbildschirm im Comic-Design (Klassen-Drehschloss, Rollen
+      Field Agents / HQ, Ampel mit Sternen, Missionsnummer)
+    - Kopplung zweier iPads OHNE Internet über die Missionsnummer
+    - Klasse 5: Trainingsmission + Mission 1 „The Lost Hamster“
+      (Türschild/Passwort, Zimmer-Unterschiede, Kind auf dem Schulhof,
+      Finale mit Gesamtcode)
+    - Funkcodes zwischen den Stationen, Erklärung bei Fehlern,
+      Funk-Knopf mit Redemitteln und Wörterhilfe
+
+  Aufbau
+  ------
+  index.html          = Technik + Design (diese Datei)
+  daten/klasse5.js    = Inhalte Klasse 5 (Texte, Wörter, Lösungsbausteine)
+
+  Datenschutz: Es wird nichts gespeichert und nichts übertragen.
+  Kein localStorage, keine Cookies, keine externen Dateien.
+  =====================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Agent Files</title>
+<style>
+/* ===================== FARBEN & SCHRIFTEN ===================== */
+:root{
+  --navy:#0B2D5B; --navy-dunkel:#0b1a33; --gelb:#F4C430; --koralle:#E85D3A;
+  --tuerkis:#2FB7B3; --papier:#F7F1E3; --gruen:#3FA34D; --holz:#8A5A2E;
+  --akte:#E9CF96; --geraet:#3a4c66;
+  --f-titel:"Avenir Next Condensed","AvenirNextCondensed-Heavy","Arial Narrow",Impact,"Helvetica Neue",sans-serif;
+  --f-text:"Avenir Next","Helvetica Neue",Arial,sans-serif;
+  --f-schreibmaschine:"American Typewriter","Courier New",monospace;
+  --f-hand:"Marker Felt","Chalkboard SE","Comic Sans MS",cursive;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  font-family:var(--f-text);color:var(--navy-dunkel);
+  background-color:var(--navy);
+  background-image:
+    radial-gradient(rgba(255,255,255,.07) 1.6px, transparent 1.8px),
+    repeating-conic-gradient(from 0deg at 50% 35%, #0f3a73 0deg 7deg, var(--navy) 7deg 14deg);
+  background-size:14px 14px, 100% 100%;
+  background-attachment:fixed;
+  touch-action:manipulation;user-select:none;-webkit-user-select:none;
+  min-height:100%;
+}
+body.hq{
+  background-color:#7a4c25;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.06) 0 3px, transparent 3px 90px),
+    repeating-linear-gradient(0deg, #8A5A2E 0 38px, #7f5228 38px 40px, #93633a 40px 78px, #7f5228 78px 80px);
+  background-size:auto;
+}
+#app{max-width:1100px;margin:0 auto;padding:14px 14px 110px;min-height:100vh}
+.titel{font-family:var(--f-titel);font-weight:900;text-transform:uppercase;letter-spacing:.02em}
+footer{position:fixed;left:0;right:0;bottom:0;text-align:center;font-size:.75rem;color:rgba(255,255,255,.75);padding:4px;pointer-events:none}
+body.hq footer{color:rgba(255,240,210,.85)}
+
+/* ===================== KNÖPFE ===================== */
+.knopf{
+  font-family:var(--f-titel);font-weight:900;text-transform:uppercase;
+  font-size:1.35rem;padding:.55em 1.2em;min-height:60px;
+  border:3px solid var(--navy-dunkel);border-radius:18px;cursor:pointer;
+  background:var(--gelb);color:var(--navy-dunkel);
+  box-shadow:0 5px 0 var(--navy-dunkel);transition:transform .05s;
+}
+.knopf:active{transform:translateY(4px);box-shadow:0 1px 0 var(--navy-dunkel)}
+.knopf.navy{background:var(--navy);color:#fff}
+.knopf.koralle{background:var(--koralle);color:#fff}
+.knopf.tuerkis{background:var(--tuerkis);color:#fff}
+.knopf.papier{background:var(--papier)}
+.knopf:disabled{opacity:.45}
+.knopfreihe{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+
+/* ===================== KARTEN ===================== */
+.karte{background:var(--papier);border:3px solid var(--navy-dunkel);border-radius:18px;
+  box-shadow:0 6px 0 var(--navy-dunkel);padding:16px}
+.karte.gelbrand{outline:5px solid var(--gelb);outline-offset:-10px}
+.hinweis{font-size:1.05rem;line-height:1.4}
+.de{font-size:1rem;color:#33425a;line-height:1.35}
+
+/* ===================== START ===================== */
+.logo{display:flex;flex-direction:column;align-items:center;margin:4px 0 14px}
+.logo-band{background:var(--gelb);border:4px solid var(--navy-dunkel);border-radius:10px;
+  padding:4px 26px;transform:rotate(-2deg);box-shadow:0 6px 0 var(--navy-dunkel);display:flex;align-items:center;gap:10px}
+.logo-band span{font-family:var(--f-titel);font-weight:900;font-size:clamp(2.4rem,7vw,4.4rem);color:var(--navy);line-height:1}
+.logo-unter{background:var(--papier);border:3px solid var(--navy-dunkel);padding:2px 18px;margin-top:-4px;transform:rotate(-2deg);
+  font-family:var(--f-titel);font-weight:900;font-size:1.3rem}
+.startreihe{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center}
+@media (max-width:700px){.startreihe{grid-template-columns:1fr 1fr}.startreihe .schloss-box{grid-column:1/3;order:-1}}
+.rolle{cursor:pointer;text-align:center;padding:14px;min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.rolle:active{transform:translateY(4px);box-shadow:0 2px 0 var(--navy-dunkel)}
+.rolle .titel{font-size:2rem;line-height:1}
+.rolle svg{width:120px;height:90px}
+.schloss-box{display:flex;align-items:center;gap:8px;justify-content:center}
+.pfeil{width:54px;height:54px;border-radius:50%;border:3px solid var(--navy-dunkel);background:var(--gelb);font-size:1.6rem;font-weight:900;cursor:pointer;box-shadow:0 4px 0 var(--navy-dunkel)}
+.pfeil:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy-dunkel)}
+.schloss{width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,#d7dde5 0 55%,#8f9bab 56% 62%,#d7dde5 63% 100%);
+  border:5px solid var(--navy-dunkel);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 6px 0 var(--navy-dunkel)}
+.schloss::before{content:"";position:absolute;inset:12px;border-radius:50%;
+  background:repeating-conic-gradient(var(--navy-dunkel) 0 1.2deg, transparent 1.2deg 15deg);
+  -webkit-mask:radial-gradient(circle, transparent 0 62%, #000 63%);mask:radial-gradient(circle, transparent 0 62%, #000 63%)}
+.schloss-innen{width:96px;height:96px;border-radius:50%;background:var(--navy);border:4px solid var(--navy-dunkel);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--f-titel);font-weight:900;font-size:3.4rem}
+.schloss-label{color:#fff;text-align:center;font-family:var(--f-titel);font-weight:900;margin-top:6px;font-size:1.1rem}
+.leiste{margin-top:22px;background:rgba(11,26,51,.85);border:3px solid var(--navy-dunkel);border-radius:18px;padding:12px 18px;color:#fff;
+  display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap}
+
+/* Ampel mit Sternen */
+.sterne{display:flex;gap:12px}
+.stern-knopf{width:72px;height:72px;border-radius:50%;border:3px solid var(--navy-dunkel);cursor:pointer;
+  box-shadow:0 4px 0 var(--navy-dunkel);color:#fff;font-size:1.25rem;line-height:1;opacity:.55}
+.stern-knopf.an{opacity:1;outline:5px solid #fff;outline-offset:2px}
+.stern-knopf.s0{background:var(--gruen)} .stern-knopf.s1{background:var(--gelb);color:var(--navy-dunkel)} .stern-knopf.s2{background:var(--koralle)}
+.missionen{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.mission-karte{cursor:pointer;text-align:center}
+.mission-karte.an{background:#fff4c9;outline:6px solid var(--gelb);outline-offset:-3px}
+.mission-karte .titel{font-size:1.7rem}
+.nummer{font-family:var(--f-titel);font-weight:900;font-size:clamp(4rem,14vw,7rem);background:var(--papier);color:var(--navy);
+  border:4px solid var(--navy-dunkel);border-radius:16px;padding:0 .4em;letter-spacing:.08em;display:inline-block;box-shadow:0 6px 0 var(--navy-dunkel)}
+
+/* ===================== STATIONEN ===================== */
+.kopf{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.raus{width:48px;height:48px;border-radius:50%;border:3px solid var(--navy-dunkel);background:var(--papier);font-weight:900;font-size:1.3rem;cursor:pointer;flex:none}
+.banner{flex:1;background:var(--gelb);border:3px solid var(--navy-dunkel);border-radius:10px;padding:6px 16px;
+  font-family:var(--f-titel);font-weight:900;font-size:clamp(1.2rem,3.4vw,1.9rem);text-transform:uppercase;transform:rotate(-1deg);box-shadow:0 4px 0 var(--navy-dunkel)}
+.sprecher{background:var(--navy);color:#fff;border:3px solid var(--navy-dunkel);border-radius:10px;padding:6px 10px;font-family:var(--f-titel);font-weight:900;font-size:1rem;flex:none}
+body.hq .sprecher{background:var(--koralle)}
+.aufgabe{background:rgba(247,241,227,.95);border:3px solid var(--navy-dunkel);border-radius:14px;padding:10px 14px;margin-bottom:14px;font-size:1.05rem;line-height:1.35}
+.aufgabe b{font-family:var(--f-titel);text-transform:uppercase}
+
+/* Agenten-Gerät (Field Agents) */
+.geraet{position:relative;background:var(--geraet);border:4px solid var(--navy-dunkel);border-radius:34px;padding:26px 22px 22px 22px;
+  box-shadow:inset 0 -10px 0 rgba(0,0,0,.25), inset 0 6px 0 rgba(255,255,255,.08), 0 8px 0 var(--navy-dunkel);margin-top:46px}
+.geraet::before{content:"";position:absolute;top:-50px;left:46px;width:26px;height:56px;background:#22324a;border:4px solid var(--navy-dunkel);border-radius:10px 10px 0 0}
+.geraet .lampe{position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:66px;height:28px;border-radius:30px 30px 6px 6px;background:var(--koralle);border:4px solid var(--navy-dunkel);box-shadow:0 0 18px rgba(232,93,58,.8)}
+.geraet .grill{position:absolute;left:8px;top:90px;width:10px;height:110px;border-radius:5px;background:repeating-linear-gradient(#1c2a40 0 8px,transparent 8px 16px)}
+.schirm{background:var(--papier);border:4px solid var(--navy-dunkel);border-radius:20px;padding:14px;min-height:200px}
+
+/* Akte (HQ) */
+.akte{position:relative;background:var(--akte);border:4px solid var(--navy-dunkel);border-radius:10px 22px 22px 10px;padding:22px 18px 18px;
+  box-shadow:0 8px 0 rgba(0,0,0,.35), inset 12px 0 0 #d8b978}
+.akte::before{content:"";position:absolute;left:24px;top:-18px;width:34px;height:70px;border:5px solid #9aa3ad;border-radius:18px;border-bottom-color:transparent;transform:rotate(-8deg)}
+.stempel{position:absolute;right:26px;top:-16px;z-index:2;border:4px solid var(--koralle);color:var(--koralle);font-family:var(--f-titel);font-weight:900;
+  font-size:1.5rem;padding:0 10px;transform:rotate(-8deg);opacity:.9;background:rgba(255,255,255,.25)}
+.papier{background:#fffdf6;border:2px solid #b9a77f;box-shadow:3px 4px 0 rgba(0,0,0,.18);padding:16px 18px;font-family:var(--f-schreibmaschine);font-size:1.15rem;line-height:1.5}
+.papier h3{margin:0 0 8px;font-family:var(--f-schreibmaschine);text-decoration:underline}
+.zettel{margin-top:26px;background:#ffe27a;border:2px solid #c9a52a;box-shadow:3px 4px 0 rgba(0,0,0,.2);padding:10px 14px;font-family:var(--f-hand);font-size:1.15rem;transform:rotate(1.5deg);line-height:1.45}
+.zettel h4{margin:0 0 4px;font-family:var(--f-hand);font-size:1.25rem}
+.zettel ul{margin:0;padding-left:18px}
+.zweispaltig{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;align-items:start}
+@media (max-width:760px){.zweispaltig{grid-template-columns:1fr}}
+.liste-zeile{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed #b9a77f;padding:3px 0}
+.foto{background:#fff;padding:10px 10px 30px;border:2px solid #cfc6b0;box-shadow:3px 5px 0 rgba(0,0,0,.25);transform:rotate(-1deg)}
+.foto-unter{font-family:var(--f-hand);text-align:center;margin-top:4px;font-size:1.1rem}
+
+/* Tastaturen */
+.anzeige{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:6px 0 12px;min-height:56px}
+.feld{width:44px;height:54px;border:3px solid var(--navy-dunkel);border-radius:8px;background:#fff;font-family:var(--f-titel);font-weight:900;font-size:2rem;
+  display:flex;align-items:center;justify-content:center}
+.feld.aktiv{border-color:var(--koralle);box-shadow:0 0 0 3px rgba(232,93,58,.35)}
+.feld.fest{border:none;background:none;width:18px}
+.luecke{width:22px}
+.tasten{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;max-width:620px;margin:0 auto}
+.tasten.zahlen{grid-template-columns:repeat(5,1fr);max-width:420px}
+.taste{min-height:58px;border:3px solid var(--navy-dunkel);border-radius:12px;background:var(--papier);font-family:var(--f-titel);font-weight:900;font-size:1.7rem;
+  box-shadow:0 4px 0 var(--navy-dunkel);cursor:pointer;color:var(--navy-dunkel)}
+.taste:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy-dunkel)}
+.taste.ok{background:var(--tuerkis);color:#fff;grid-column:span 2}
+.taste.weg{background:var(--koralle);color:#fff}
+
+/* Funkcode-Feld (Empfänger) */
+.funk-panel{margin-top:18px;background:var(--navy);color:#fff;border:3px solid var(--navy-dunkel);border-radius:18px;padding:12px 14px;box-shadow:0 6px 0 var(--navy-dunkel)}
+.funk-panel .titel{font-size:1.4rem;text-align:center}
+.funk-panel .de{color:#dfe7f3;text-align:center}
+.funk-panel .taste{background:var(--papier)}
+.funk-panel .taste.ok{background:var(--tuerkis)}
+.funk-panel .taste.weg{background:var(--koralle)}
+
+/* Erfolgsfeld (Löser) */
+.erfolg{background:var(--papier);border:4px solid var(--navy-dunkel);border-radius:20px;padding:18px;text-align:center;box-shadow:0 8px 0 var(--navy-dunkel)}
+.erfolg .haken{display:inline-block;background:var(--gruen);color:#fff;border:3px solid var(--navy-dunkel);border-radius:14px;padding:4px 18px;font-family:var(--f-titel);font-weight:900;font-size:2rem}
+.code-gross{font-family:var(--f-titel);font-weight:900;font-size:4rem;letter-spacing:.25em;color:var(--navy);margin:4px 0}
+.code-box{display:inline-block;border:3px dashed var(--navy-dunkel);border-radius:14px;padding:6px 18px;margin:10px 6px 0;background:#fff}
+
+/* Fortschritt + Funk-Knopf */
+.unten{position:fixed;right:16px;bottom:24px;z-index:20}
+.fortschritt-zeile{display:flex;justify-content:center;margin:-4px 0 12px}
+.fortschritt{display:flex;align-items:center;background:rgba(11,26,51,.8);border:3px solid var(--navy-dunkel);border-radius:30px;padding:6px 10px}
+.punkt{width:38px;height:38px;border-radius:50%;border:3px solid var(--navy-dunkel);background:#9aa3ad;color:#fff;font-family:var(--f-titel);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.punkt.fertig{background:var(--tuerkis)} .punkt.jetzt{background:var(--gelb);color:var(--navy-dunkel)}
+.strich{width:22px;height:4px;background:#9aa3ad}
+.funk-knopf{width:80px;height:80px;border-radius:50%;background:var(--gelb);border:4px solid var(--navy-dunkel);box-shadow:0 5px 0 var(--navy-dunkel);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.funk-knopf:active{transform:translateY(4px);box-shadow:0 1px 0 var(--navy-dunkel)}
+.funk-knopf svg{width:46px;height:46px}
+
+/* Overlays */
+.overlay{position:fixed;inset:0;background:rgba(11,26,51,.72);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.dialog{background:var(--papier);border:4px solid var(--navy-dunkel);border-radius:22px;max-width:640px;width:100%;max-height:88vh;overflow:auto;padding:18px 20px;box-shadow:0 10px 0 var(--navy-dunkel)}
+.dialog h2{font-family:var(--f-titel);font-weight:900;text-transform:uppercase;margin:0 0 10px;font-size:1.8rem}
+.dialog.fehler h2{color:var(--koralle)}
+.beispiel{background:#fff;border-left:6px solid var(--tuerkis);padding:8px 12px;margin:10px 0;font-size:1.1rem}
+.tabs{display:flex;gap:8px;margin-bottom:10px}
+.tab{flex:1;padding:10px;border:3px solid var(--navy-dunkel);border-radius:12px;background:#fff;font-family:var(--f-titel);font-weight:900;font-size:1.1rem;cursor:pointer}
+.tab.an{background:var(--gelb)}
+.satzliste{list-style:none;padding:0;margin:0}
+.satzliste li{background:#fff;border:2px solid #d6ccb4;border-radius:10px;padding:8px 12px;margin:6px 0;font-size:1.15rem}
+.wort-zeile{display:flex;justify-content:space-between;border-bottom:1px solid #d6ccb4;padding:6px 2px;font-size:1.05rem}
+
+/* Briefing */
+.briefing{display:grid;grid-template-columns:200px 1fr;gap:18px;align-items:center}
+@media (max-width:700px){.briefing{grid-template-columns:1fr}.briefing svg{max-width:160px;margin:0 auto}}
+.sprechblase{background:#fff;border:4px solid var(--navy-dunkel);border-radius:24px;padding:16px 20px;font-size:1.3rem;line-height:1.45;position:relative;box-shadow:0 6px 0 var(--navy-dunkel)}
+.regeln{margin-top:16px}
+.regeln li{margin:4px 0;font-size:1.1rem}
+
+/* Zimmer / Schulhof */
+svg.szene{width:100%;height:auto;display:block;border:3px solid var(--navy-dunkel);border-radius:14px;background:#fff}
+.ding,.kind{cursor:pointer}
+.zaehler{text-align:center;font-family:var(--f-titel);font-weight:900;font-size:1.4rem;margin-top:8px}
+
+/* Tür */
+.tuer-wrap{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+.tuer{width:170px;height:280px;background:#9c5f2c;border:4px solid var(--navy-dunkel);border-radius:8px 8px 0 0;position:relative;flex:none;
+  background-image:linear-gradient(#8a5125,#8a5125),linear-gradient(#8a5125,#8a5125);background-size:120px 80px,120px 100px;background-position:21px 110px,21px 160px;background-repeat:no-repeat}
+.tuer::after{content:"";position:absolute;right:16px;top:150px;width:16px;height:16px;border-radius:50%;background:var(--gelb);border:3px solid var(--navy-dunkel)}
+.schild{position:absolute;left:14px;right:14px;top:26px;background:var(--papier);border:3px solid var(--navy-dunkel);border-radius:6px;text-align:center;
+  font-family:var(--f-titel);font-weight:900;font-size:1.35rem;padding:8px 4px}
+.tuer-rechts{flex:1;min-width:280px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<footer>Agent Files · v0.1.0 · M. Aldenius</footer>
+
+<!-- Inhalte (eine Datei pro Klasse) -->
+<script src="daten/klasse5.js"></script>
+
+<script>
+"use strict";
+/* =====================================================================
+   1) EINSTELLUNGEN
+   ===================================================================== */
+const VERSION = "v0.1.0";
+const KLASSEN_ANGEBOT = [5, 6, 7, 8];          // Drehschloss
+const STERNE = ["★", "★★", "★★★"];
+const ZAHLWORT = ["zero","one","two","three","four","five","six","seven","eight","nine"];
+
+/* Erklärtexte bei Fehlern (Klasse 5–7 auf Deutsch) */
+const ERKLAERUNG = {
+  buchstabieren: {
+    text: "Das passt noch nicht. Fragt noch einmal nach und vergleicht Buchstabe für Buchstabe.",
+    beispiel: "How do you spell it? – Again, please.<br>Achtung bei ähnlichen Buchstaben: <b>E</b> (sprich „i“) und <b>I</b> (sprich „ai“), <b>G</b> (sprich „dschi“) und <b>J</b> (sprich „dschei“)."
+  },
+  tuer: {
+    text: "Das Passwort stimmt nicht. Hat HQ den richtigen Namen gefunden? Buchstabiert den Namen an der Tür noch einmal genau.",
+    beispiel: "The name is M – R – S, G – R – E – E – N. What's the password?<br>Achtung: <b>Mr</b> (Herr), <b>Mrs</b> und <b>Ms</b> (Frau) sind verschiedene Namen!"
+  },
+  zimmer: {
+    text: "Dieses Ding ist noch am selben Platz wie auf dem Foto. Fragt HQ, wo es auf dem Foto ist.",
+    beispiel: "Is the lamp on the table? – Yes, it is. / No, it isn't.<br>on = auf · in = in · under = unter · next to = neben"
+  },
+  kinder: {
+    text: "Das ist nicht das richtige Kind. Lasst euch die Notiz noch einmal vorlesen und prüft Satz für Satz: boy oder girl? hair? T-shirt? cap oder hat?",
+    beispiel: "Is it a boy or a girl? – What colour is her cap?<br><b>his</b> = sein (Junge) · <b>her</b> = ihr (Mädchen) · <b>isn't</b> = ist nicht"
+  },
+  name: {
+    text: "Dieser Name passt nicht. Lasst ihn euch noch einmal buchstabieren.",
+    beispiel: "How do you spell it? – A – M – Y."
+  },
+  funk: {
+    text: "Der Funkcode stimmt nicht. Fragt das andere Team noch einmal nach dem Code.",
+    beispiel: "What's the code? – Again, please.<br>zero, one, two, three, four, five, six, seven, eight, nine"
+  },
+  finale: {
+    text: "Der Code stimmt nicht. Zuerst kommen die zwei Zahlen der Field Agents, danach die zwei Zahlen von HQ.",
+    beispiel: "Our numbers are four and seven. What are your numbers?"
+  },
+  nummer: {
+    text: "Diese Missionsnummer gibt es nicht. Sie hat drei Ziffern und beginnt nicht mit 0. Fragt die Field Agents noch einmal.",
+    beispiel: "What's the mission number? – Four, seven, two."
+  }
+};
+
+/* =====================================================================
+   2) ZUFALL MIT STARTZAHL
+   Gleiche Missionsnummer = auf beiden iPads exakt gleiche Rätsel.
+   ===================================================================== */
+// ==== GENERATOREN START ====
+function hashZahl(text){ let h = 2166136261; for (let i=0;i<text.length;i++){ h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function zufallsquelle(startzahl){
+  let a = startzahl >>> 0;
+  const r = function(){ a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  r.zahl = (min, max) => min + Math.floor(r() * (max - min + 1));
+  r.eins = (liste) => liste[Math.floor(r() * liste.length)];
+  r.mischen = (liste) => { const l = liste.slice(); for (let i=l.length-1;i>0;i--){ const j = Math.floor(r()*(i+1)); [l[i],l[j]]=[l[j],l[i]]; } return l; };
+  r.ziffern = (n) => Array.from({length:n}, () => r.zahl(0,9));
+  return r;
+}
+
+/* Missionsnummer: verschlüsselt Mission und Ampel.
+   nummer % (3*K) = stufe*K + missionIndex   (K = Anzahl Missionen der Klasse) */
+function nummerErzeugen(K, missionIndex, stufe){
+  const m = 3 * K, rest = stufe * K + missionIndex;
+  let n = 100 + Math.floor(Math.random() * 900);
+  n = n - (n % m) + rest;
+  if (n < 100) n += m;
+  if (n > 999) n -= m;
+  return n;
+}
+function nummerLesen(K, n){ const m = n % (3*K); return { stufe: Math.floor(m / K), missionIndex: m % K }; }
+
+/* ---------- Bausteine: Rätsel erzeugen (für beide iPads gleich) ---------- */
+const ERZEUGEN = {
+
+  buchstabieren(r, stufe, st){
+    return { wort: r.eins(st.woerter[stufe]) };
+  },
+
+  tuer(r, stufe, st){
+    const L = st.listenLaenge[stufe];
+    let namen;
+    if (stufe === 2){
+      const paar = r.eins(st.aehnlich);
+      const rest = r.mischen(st.namen.filter(n => !paar.includes(n))).slice(0, L - 2);
+      namen = r.mischen(paar.concat(rest));
+    } else {
+      namen = r.mischen(st.namen).slice(0, L);
+    }
+    const tuerName = (stufe === 2) ? r.eins(namen.filter(n => st.aehnlich.some(p => p.includes(n) && p.every(x => namen.includes(x))))) : r.eins(namen);
+    const zielPw = r.eins(st.passwoerter[stufe]);
+    const alle = [...new Set(st.passwoerter.flat())].filter(p => p !== zielPw);
+    const andere = r.mischen(alle);
+    const liste = namen.map(n => ({ name: n, pw: n === tuerName ? zielPw : andere.pop() }));
+    return { tuerName, liste, passwort: zielPw };
+  },
+
+  zimmer(r, stufe, st){
+    const N = st.anzahlDinge[stufe], D = st.anzahlUnterschiede[stufe];
+    const dinge = r.mischen(st.dinge).slice(0, N);
+    const plaetze = r.mischen(st.plaetze.map(p => p.id));
+    const vorher = dinge.map((d, i) => ({ id: d.id, platz: plaetze[i], anzahl: d.anzahl ? r.eins(d.anzahl) : 1 }));
+    const frei = plaetze.slice(N);
+    const bewegt = r.mischen(vorher.map(v => v.id)).slice(0, D);
+    const nachher = vorher.map(v => ({ ...v }));
+    bewegt.forEach((id, i) => { nachher.find(v => v.id === id).platz = frei[i]; });
+    return { vorher, nachher, bewegt, codeTeil: r.ziffern(2) };
+  },
+
+  kinder(r, stufe, st){
+    const n = st.anzahlKinder[stufe];
+    const andereAls = (liste, wert) => r.eins(liste.filter(x => x !== wert));
+    const ziel = {
+      g: r.eins(["boy","girl"]), haar: r.eins(st.haarfarben), shirt: r.eins(st.farben),
+      kopf: r.eins(st.kopf), kopfFarbe: r.eins(st.farben), tasche: r.eins(st.farben), ziel: true
+    };
+    const aendern = {
+      g: k => { k.g = k.g === "boy" ? "girl" : "boy"; },
+      haar: k => { k.haar = andereAls(st.haarfarben, k.haar); },
+      shirt: k => { k.shirt = andereAls(st.farben, k.shirt); },
+      kopf: k => { k.kopf = k.kopf === "cap" ? "hat" : "cap"; },
+      kopfFarbe: k => { k.kopfFarbe = andereAls(st.farben, k.kopfFarbe); }
+    };
+    const merkmale = Object.keys(aendern);
+    const kinder = [ziel];
+    let verneint = null;
+    if (stufe === 2){
+      verneint = andereAls(st.farben, ziel.tasche);
+      kinder.push({ ...ziel, tasche: verneint, ziel: false });
+    }
+    let reihe = r.mischen(merkmale), i = 0;
+    while (kinder.length < n){
+      const k = { ...ziel, ziel: false, tasche: r.eins(st.farben) };
+      if (stufe === 0){ r.mischen(merkmale).slice(0, 2).forEach(m => aendern[m](k)); }
+      else { aendern[reihe[i % reihe.length]](k); i++; }
+      kinder.push(k);
+    }
+    // Namen und Hautfarbe
+    const jungen = r.mischen(st.jungen), maedchen = r.mischen(st.maedchen);
+    kinder.forEach(k => { k.name = (k.g === "boy" ? jungen : maedchen).pop(); k.haut = r.zahl(0, 3); });
+    // Beschreibung (Notiz des Hausmeisters)
+    const sein = ziel.g === "boy" ? "His" : "Her";
+    const notiz = [
+      st.notizAnfang,
+      ziel.g === "boy" ? "It's a boy." : "It's a girl.",
+      "The " + ziel.g + "'s T-shirt is " + ziel.shirt + ".",
+      sein + " hair is " + ziel.haar + ".",
+      sein + " " + ziel.kopf + " is " + ziel.kopfFarbe + "."
+    ];
+    if (verneint) notiz.push(sein + " bag isn't " + verneint + ".");
+    return { kinder: r.mischen(kinder), zielName: ziel.name, notiz, codeTeil: r.ziffern(2) };
+  },
+
+  finale(){ return {}; }
+};
+
+/* Ganze Mission erzeugen: alle Stationen + Funkcodes + Finale-Code */
+function missionErzeugen(klasse, nummer){
+  const daten = AGENT_FILES.klassen[klasse];
+  const K = daten.missionen.length;
+  const { stufe, missionIndex } = nummerLesen(K, nummer);
+  const mission = daten.missionen[missionIndex];
+  const stationen = mission.stationen.map((st, i) => {
+    const r = zufallsquelle(hashZahl("AF|" + klasse + "|" + nummer + "|" + i));
+    const raetsel = ERZEUGEN[st.baustein](r, stufe, st);
+    raetsel.funkcode = r.ziffern(2);
+    return { def: st, raetsel };
+  });
+  const codeField = [], codeHQ = [];
+  stationen.forEach(s => { if (s.raetsel.codeTeil){ (s.def.loeser === "field" ? codeField : codeHQ).push(...s.raetsel.codeTeil); } });
+  return { klasse, nummer, stufe, missionIndex, mission, stationen, codeField, codeHQ };
+}
+// ==== GENERATOREN ENDE ====
+
+/* =====================================================================
+   3) ZEICHNUNGEN (alles als SVG im Code, keine Bilddateien)
+   ===================================================================== */
+const FARBE = { red:"#e0453a", green:"#3fa34d", blue:"#2f6fd6", yellow:"#f4c430", black:"#262626", white:"#fafafa",
+  orange:"#f28c28", purple:"#8e44ad", pink:"#f49ac2", grey:"#9aa3ad", brown:"#7a4a24" };
+const HAAR = { brown:"#6b3e1f", black:"#1d1d1d", red:"#d0521c" };
+const HAUT = ["#f2c9a0", "#d9a06b", "#a86b3c", "#f6dcc2"];
+const U = 'stroke="#0b1a33" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+
+function hamsterSVG(gross){
+  return `<svg viewBox="0 0 200 220" ${gross ? 'style="width:100%;max-width:220px"' : ''}>
+  <ellipse cx="100" cy="208" rx="62" ry="8" fill="rgba(0,0,0,.25)"/>
+  <path d="M48 200 Q40 130 70 110 L130 110 Q160 130 152 200 Z" fill="#b8864b" ${U}/>
+  <path d="M100 112 L86 200 M100 112 L114 200" ${U} fill="none"/>
+  <circle cx="100" cy="160" r="4" fill="#0b1a33"/><circle cx="100" cy="180" r="4" fill="#0b1a33"/>
+  <circle cx="58" cy="58" r="16" fill="#e8a25a" ${U}/><circle cx="142" cy="58" r="16" fill="#e8a25a" ${U}/>
+  <circle cx="58" cy="58" r="7" fill="#f4b6a0"/><circle cx="142" cy="58" r="7" fill="#f4b6a0"/>
+  <ellipse cx="100" cy="82" rx="52" ry="44" fill="#e8a25a" ${U}/>
+  <ellipse cx="100" cy="96" rx="34" ry="26" fill="#fbe3c4"/>
+  <circle cx="82" cy="78" r="6" fill="#0b1a33"/><circle cx="118" cy="78" r="6" fill="#0b1a33"/>
+  <circle cx="84" cy="76" r="2" fill="#fff"/><circle cx="120" cy="76" r="2" fill="#fff"/>
+  <ellipse cx="100" cy="92" rx="7" ry="5" fill="#e0607a" ${U}/>
+  <path d="M90 102 Q100 110 110 102" fill="none" ${U}/>
+  <path d="M44 48 Q100 36 156 48 L160 56 Q100 46 40 56 Z" fill="#7a4a24" ${U}/>
+  <path d="M66 46 Q70 14 100 14 Q130 14 134 46 Z" fill="#8a5a2e" ${U}/>
+  <rect x="68" y="34" width="64" height="8" fill="#0b2d5b"/>
+  </svg>`;
+}
+function funkSVG(){
+  return `<svg viewBox="0 0 48 48"><path d="M16 14 Q10 24 16 34 M32 14 Q38 24 32 34 M10 9 Q1 24 10 39 M38 9 Q47 24 38 39" fill="none" stroke="#0b1a33" stroke-width="3.5" stroke-linecap="round"/><circle cx="24" cy="22" r="5" fill="#0b1a33"/><path d="M24 26 L20 42 M24 26 L28 42" stroke="#0b1a33" stroke-width="3.5" stroke-linecap="round"/></svg>`;
+}
+function rolleFieldSVG(){
+  return `<svg viewBox="0 0 120 90"><rect x="14" y="26" width="32" height="56" rx="6" fill="#3a4c66" ${U}/><rect x="20" y="10" width="7" height="18" fill="#22324a" ${U}/>
+  <rect x="20" y="34" width="20" height="14" rx="2" fill="#2fb7b3" ${U}/><circle cx="24" cy="60" r="3" fill="#f4c430"/><circle cx="36" cy="60" r="3" fill="#e85d3a"/>
+  <circle cx="78" cy="40" r="20" fill="#cfeef0" ${U}/><path d="M92 54 L110 78" stroke="#0b1a33" stroke-width="9" stroke-linecap="round"/><path d="M92 54 L110 78" stroke="#8a5a2e" stroke-width="4" stroke-linecap="round"/></svg>`;
+}
+function rolleHQSVG(){
+  return `<svg viewBox="0 0 120 90"><rect x="10" y="52" width="100" height="10" fill="#8a5a2e" ${U}/><rect x="16" y="62" width="10" height="24" fill="#8a5a2e" ${U}/><rect x="94" y="62" width="10" height="24" fill="#8a5a2e" ${U}/>
+  <path d="M22 52 L26 30 L46 30 L50 34 L70 34 L66 52 Z" fill="#e9cf96" ${U}/><path d="M42 40 l3 6 6 1 -5 4 1 6 -5 -3 -5 3 1 -6 -5 -4 6 -1z" fill="#f4c430"/>
+  <path d="M84 52 L84 30 L100 18" fill="none" ${U}/><path d="M92 12 L110 22 L102 30 Z" fill="#f4c430" ${U}/></svg>`;
+}
+
+/* ---------- Gegenstände im Zimmer (Größe ca. 46 x 46, Fußpunkt unten Mitte) ---------- */
+function dingSVG(id, anzahl){
+  switch(id){
+    case "lamp": return `<ellipse cx="23" cy="44" rx="12" ry="3" fill="#0b2d5b" ${U}/><path d="M23 44 L23 20" ${U}/><path d="M10 22 L16 4 L30 4 L36 22 Z" fill="#f4c430" ${U}/>`;
+    case "book": { let s = ""; const f = ["#2fb7b3","#e85d3a","#f4c430"]; for (let i=0;i<anzahl;i++){ const y = 44 - (i+1)*11; s += `<rect x="${6+i*2}" y="${y}" width="34" height="10" rx="2" fill="${f[i%3]}" ${U}/><line x1="${10+i*2}" y1="${y+5}" x2="${36+i*2}" y2="${y+5}" stroke="#fff" stroke-width="2"/>`; } return s; }
+    case "clock": return `<circle cx="10" cy="12" r="6" fill="#e85d3a" ${U}/><circle cx="36" cy="12" r="6" fill="#e85d3a" ${U}/><circle cx="23" cy="26" r="16" fill="#e85d3a" ${U}/><circle cx="23" cy="26" r="11" fill="#fff" ${U}/><path d="M23 26 L23 19 M23 26 L28 28" ${U}/><path d="M12 42 L9 46 M34 42 L37 46" ${U}/>`;
+    case "mobile": return `<rect x="13" y="8" width="20" height="36" rx="4" fill="#0b2d5b" ${U}/><rect x="16" y="13" width="14" height="22" fill="#2fb7b3"/><circle cx="23" cy="39" r="2" fill="#fff"/>`;
+    case "cap": return `<path d="M6 40 Q6 18 24 18 Q40 18 40 40 Z" fill="#2f6fd6" ${U}/><path d="M38 40 L46 40 Q46 44 38 44 L6 44 L6 40" fill="#2f6fd6" ${U}/><circle cx="24" cy="18" r="3" fill="#2f6fd6" ${U}/>`;
+    case "scarf": return `<path d="M4 20 Q14 12 24 20 Q34 28 42 20 L42 30 Q34 38 24 30 Q14 22 4 30 Z" fill="#e85d3a" ${U}/><path d="M30 30 L28 46 L36 46 L38 30" fill="#f4c430" ${U}/>`;
+    case "shoe": return `<path d="M2 44 L2 32 L12 30 L18 36 L22 38 L22 44 Z" fill="#e85d3a" ${U}/><path d="M24 44 L24 32 L34 30 L40 36 L44 38 L44 44 Z" fill="#e85d3a" ${U}/>`;
+    case "bag": return `<path d="M15 20 Q15 6 23 6 Q31 6 31 20" fill="none" ${U}/><rect x="6" y="18" width="34" height="26" rx="6" fill="#8e44ad" ${U}/><rect x="16" y="26" width="14" height="8" fill="#f4c430" ${U}/>`;
+    case "box": return `<rect x="5" y="14" width="36" height="30" fill="#c89a5b" ${U}/><path d="M5 14 L11 6 L35 6 L41 14" fill="#d9b27c" ${U}/><line x1="23" y1="14" x2="23" y2="44" stroke="#f7f1e3" stroke-width="5"/>`;
+    case "computer": return `<rect x="8" y="10" width="30" height="22" rx="2" fill="#9aa3ad" ${U}/><rect x="11" y="13" width="24" height="16" fill="#2fb7b3"/><path d="M2 40 L8 32 L38 32 L44 40 Z" fill="#c7ced6" ${U}/>`;
+  }
+  return "";
+}
+const PLATZ_POS = {
+  onBed:[135,288], underBed:[135,414], onShelf:[140,186], onChair:[305,330], underChair:[305,416],
+  onTable:[450,288], underTable:[450,414], onWardrobe:[705,138], nextToWardrobe:[588,420], onCarpet:[450,474]
+};
+function zimmerSVG(liste, stDef, beschriftet, gefunden){
+  const s = [];
+  s.push(`<svg class="szene" viewBox="0 0 800 500">`);
+  s.push(`<rect x="0" y="0" width="800" height="420" fill="#cfe7ea"/>`);
+  for (let x=0;x<800;x+=40) s.push(`<line x1="${x}" y1="0" x2="${x}" y2="420" stroke="#bcdadf" stroke-width="2"/>`);
+  s.push(`<rect x="0" y="420" width="800" height="80" fill="#d9b27c"/><line x1="0" y1="420" x2="800" y2="420" stroke="#0b1a33" stroke-width="3"/>`);
+  s.push(`<ellipse cx="450" cy="470" rx="130" ry="24" fill="#e85d3a" ${U}/><ellipse cx="450" cy="470" rx="100" ry="15" fill="none" stroke="#f4c430" stroke-width="4"/>`);
+  // Fenster + Poster
+  s.push(`<rect x="370" y="40" width="160" height="120" fill="#8fd3f4" ${U}/><line x1="450" y1="40" x2="450" y2="160" ${U}/><line x1="370" y1="100" x2="530" y2="100" ${U}/>`);
+  s.push(`<rect x="560" y="50" width="56" height="80" fill="#f4c430" ${U}/><circle cx="588" cy="80" r="14" fill="#e85d3a" ${U}/><rect x="572" y="102" width="32" height="6" fill="#0b2d5b"/>`);
+  // Regal
+  s.push(`<rect x="50" y="186" width="190" height="12" fill="#8a5a2e" ${U}/><path d="M70 198 L70 214 L90 198 M220 198 L220 214 L200 198" fill="none" ${U}/>`);
+  // Bett
+  s.push(`<rect x="20" y="230" width="22" height="190" fill="#8a5a2e" ${U}/><rect x="22" y="300" width="230" height="50" fill="#8a5a2e" ${U}/>`);
+  s.push(`<rect x="30" y="286" width="220" height="18" rx="8" fill="#fff" ${U}/><rect x="110" y="282" width="140" height="24" rx="8" fill="#2fb7b3" ${U}/>`);
+  s.push(`<rect x="232" y="350" width="14" height="70" fill="#8a5a2e" ${U}/>`);
+  // Stuhl
+  s.push(`<rect x="330" y="246" width="12" height="174" fill="#c0392b" ${U}/><rect x="268" y="330" width="74" height="12" fill="#c0392b" ${U}/><rect x="270" y="342" width="10" height="78" fill="#c0392b" ${U}/>`);
+  // Tisch
+  s.push(`<rect x="360" y="288" width="180" height="16" fill="#8a5a2e" ${U}/><rect x="370" y="304" width="12" height="116" fill="#8a5a2e" ${U}/><rect x="518" y="304" width="12" height="116" fill="#8a5a2e" ${U}/>`);
+  // Schrank
+  s.push(`<rect x="630" y="138" width="150" height="282" fill="#b87a40" ${U}/><line x1="705" y1="138" x2="705" y2="420" ${U}/><circle cx="694" cy="280" r="5" fill="#f4c430" ${U}/><circle cx="716" cy="280" r="5" fill="#f4c430" ${U}/>`);
+  // Dinge
+  liste.forEach(d => {
+    const [x, y] = PLATZ_POS[d.platz];
+    const ding = stDef.dinge.find(t => t.id === d.id);
+    const ok = gefunden && gefunden.includes(d.id);
+    s.push(`<g class="ding" data-id="${d.id}" transform="translate(${x-23},${y-46})">`);
+    s.push(`<rect x="-6" y="-4" width="58" height="54" fill="transparent"/>`);
+    if (ok) s.push(`<circle cx="23" cy="24" r="30" fill="rgba(244,196,48,.55)" stroke="#0b1a33" stroke-width="3"/>`);
+    s.push(dingSVG(d.id, d.anzahl));
+    if (beschriftet){
+      const wort = d.anzahl > 1 ? (ding.plural) : ding.en;
+      s.push(`<text x="23" y="62" text-anchor="middle" font-family="Avenir Next, Arial" font-weight="700" font-size="15" fill="#0b1a33" stroke="#fff" stroke-width="4" paint-order="stroke">${wort}</text>`);
+    }
+    if (ok) s.push(`<text x="44" y="0" font-size="26" font-weight="900" fill="#3fa34d" stroke="#0b1a33" stroke-width="1.5">✓</text>`);
+    s.push(`</g>`);
+  });
+  s.push(`</svg>`);
+  return s.join("");
+}
+
+/* ---------- Kinder auf dem Schulhof ---------- */
+function kindSVG(k, cx, zeigeName){
+  const b = 360, haut = HAUT[k.haut], haar = HAAR[k.haar], sh = FARBE[k.shirt], kf = FARBE[k.kopfFarbe], ta = FARBE[k.tasche];
+  const s = [];
+  s.push(`<g class="kind" data-name="${k.name}">`);
+  s.push(`<rect x="${cx-58}" y="90" width="116" height="280" fill="transparent"/>`);
+  s.push(`<ellipse cx="${cx}" cy="${b+4}" rx="40" ry="7" fill="rgba(0,0,0,.2)"/>`);
+  if (k.g === "girl") s.push(`<path d="M${cx-34} 150 Q${cx-40} 220 ${cx-26} 232 L${cx+26} 232 Q${cx+40} 220 ${cx+34} 150 Z" fill="${haar}" ${U}/>`);
+  // Beine + Schuhe
+  s.push(`<rect x="${cx-22}" y="270" width="18" height="78" fill="#2a3f6b" ${U}/><rect x="${cx+4}" y="270" width="18" height="78" fill="#2a3f6b" ${U}/>`);
+  s.push(`<path d="M${cx-26} ${b} L${cx-26} 346 L${cx-4} 346 L${cx-2} ${b} Z" fill="#fff" ${U}/><path d="M${cx+2} ${b} L${cx+4} 346 L${cx+26} 346 L${cx+26} ${b} Z" fill="#fff" ${U}/>`);
+  // Tasche (Gurt + Tasche)
+  s.push(`<path d="M${cx-20} 192 L${cx+40} 262" stroke="${ta}" stroke-width="6" stroke-linecap="round"/>`);
+  // Körper (T-Shirt) + Arme
+  s.push(`<path d="M${cx-30} 192 L${cx+30} 192 L${cx+44} 230 L${cx+30} 236 L${cx+28} 276 L${cx-28} 276 L${cx-30} 236 L${cx-44} 230 Z" fill="${sh}" ${U}/>`);
+  s.push(`<circle cx="${cx-38}" cy="240" r="7" fill="${haut}" ${U}/><circle cx="${cx+38}" cy="240" r="7" fill="${haut}" ${U}/>`);
+  s.push(`<rect x="${cx+24}" y="248" width="34" height="30" rx="6" fill="${ta}" ${U}/>`);
+  if (zeigeName) s.push(`<rect x="${cx+14}" y="252" width="54" height="22" rx="4" fill="#fff" ${U}/><text x="${cx+41}" y="268" text-anchor="middle" font-family="Avenir Next Condensed, Arial Narrow, sans-serif" font-weight="900" font-size="15" fill="#0b1a33">${k.name}</text>`);
+  // Kopf
+  s.push(`<rect x="${cx-8}" y="180" width="16" height="14" fill="${haut}" ${U}/>`);
+  s.push(`<circle cx="${cx}" cy="150" r="32" fill="${haut}" ${U}/>`);
+  s.push(`<circle cx="${cx-11}" cy="150" r="4" fill="#0b1a33"/><circle cx="${cx+11}" cy="150" r="4" fill="#0b1a33"/><path d="M${cx-10} 164 Q${cx} 172 ${cx+10} 164" fill="none" ${U}/>`);
+  // Haare oben
+  s.push(`<path d="M${cx-32} 146 Q${cx-30} 112 ${cx} 112 Q${cx+30} 112 ${cx+32} 146 Q${cx+12} 130 ${cx-32} 146 Z" fill="${haar}" ${U}/>`);
+  // Kopfbedeckung
+  if (k.kopf === "cap"){
+    s.push(`<path d="M${cx-32} 134 Q${cx-30} 100 ${cx} 100 Q${cx+30} 100 ${cx+32} 134 Z" fill="${kf}" ${U}/><path d="M${cx+18} 134 L${cx+56} 134 Q${cx+56} 142 ${cx+30} 142 L${cx-32} 142 L${cx-32} 134 Z" fill="${kf}" ${U}/>`);
+  } else {
+    s.push(`<ellipse cx="${cx}" cy="128" rx="52" ry="10" fill="${kf}" ${U}/><path d="M${cx-26} 128 L${cx-22} 92 Q${cx} 84 ${cx+22} 92 L${cx+26} 128 Z" fill="${kf}" ${U}/><rect x="${cx-24}" y="114" width="48" height="8" fill="#0b1a33"/>`);
+  }
+  s.push(`</g>`);
+  return s.join("");
+}
+function schulhofSVG(kinder, gezeigt){
+  const breite = Math.max(800, kinder.length * 130 + 40);
+  const s = [`<svg class="szene" viewBox="0 0 ${breite} 400">`];
+  s.push(`<rect width="${breite}" height="230" fill="#9fdcf2"/><rect y="230" width="${breite}" height="170" fill="#7cc46b"/><line x1="0" y1="230" x2="${breite}" y2="230" stroke="#0b1a33" stroke-width="3"/>`);
+  s.push(`<rect x="${breite-120}" y="120" width="26" height="120" fill="#8a5a2e" ${U}/><circle cx="${breite-107}" cy="100" r="55" fill="#3fa34d" ${U}/>`);
+  s.push(`<rect x="40" y="70" width="150" height="160" fill="#e9cf96" ${U}/><rect x="60" y="90" width="40" height="36" fill="#8fd3f4" ${U}/><rect x="130" y="90" width="40" height="36" fill="#8fd3f4" ${U}/><rect x="95" y="170" width="40" height="60" fill="#8a5a2e" ${U}/>`);
+  const abstand = (breite - 40) / kinder.length;
+  kinder.forEach((k, i) => s.push(kindSVG(k, 20 + abstand * (i + 0.5), gezeigt === k.name)));
+  s.push(`</svg>`);
+  return s.join("");
+}
+
+/* =====================================================================
+   4) HILFSFUNKTIONEN FÜR DIE OBERFLÄCHE
+   ===================================================================== */
+const app = document.getElementById("app");
+const Z = {             // Zustand der laufenden Runde (wird NIRGENDS gespeichert)
+  klasse: 5, rolle: null, wahlMission: 1, wahlStufe: 1,
+  spiel: null, station: 0, geloest: {}
+};
+function html(s){ const d = document.createElement("div"); d.innerHTML = s.trim(); return d.firstElementChild; }
+function leeren(){ app.innerHTML = ""; document.querySelectorAll(".overlay,.unten").forEach(e => e.remove()); }
+function rolleKlasse(){ document.body.classList.toggle("hq", Z.rolle === "hq" && !!Z.spiel); }
+function codeSprechen(ziffern){ return ziffern.map(z => ZAHLWORT[z]).join(" – "); }
+
+/* Fehler-Erklärung: erst lesen, dann neuer Versuch */
+function erklaeren(art, danach){
+  const e = ERKLAERUNG[art];
+  const o = html(`<div class="overlay"><div class="dialog fehler"><h2>✗ Try again!</h2>
+    <p class="hinweis">${e.text}</p><div class="beispiel">${e.beispiel}</div>
+    <div class="knopfreihe"><button class="knopf" disabled>Nochmal versuchen</button></div></div></div>`);
+  document.body.appendChild(o);
+  const k = o.querySelector("button");
+  setTimeout(() => { k.disabled = false; }, 1800);
+  k.onclick = () => { o.remove(); if (danach) danach(); };
+}
+function fragen(text, jaText, ja){
+  const o = html(`<div class="overlay"><div class="dialog"><h2>Sicher?</h2><p class="hinweis">${text}</p>
+    <div class="knopfreihe"><button class="knopf papier" data-n>Nein</button><button class="knopf koralle" data-j>${jaText}</button></div></div></div>`);
+  document.body.appendChild(o);
+  o.querySelector("[data-n]").onclick = () => o.remove();
+  o.querySelector("[data-j]").onclick = () => { o.remove(); ja(); };
+}
+
+/* Tastatur. muster = Zielwort (für die Kästchen), typ = "buchstaben" | "zahlen" */
+function tastatur({ muster, laenge, typ, beiOk }){
+  const box = html(`<div></div>`);
+  const anzeige = html(`<div class="anzeige"></div>`);
+  // Kästchen-Muster: Buchstabe = Kästchen, Leerzeichen = Lücke, Bindestrich = fest
+  const zeichen = muster ? muster.split("") : Array(laenge).fill("X");
+  const felder = [];
+  zeichen.forEach(c => {
+    if (c === " ") anzeige.appendChild(html(`<div class="luecke"></div>`));
+    else if (c === "-") anzeige.appendChild(html(`<div class="feld fest">-</div>`));
+    else { const f = html(`<div class="feld"></div>`); felder.push(f); anzeige.appendChild(f); }
+  });
+  let eingabe = [];
+  const zeigen = () => felder.forEach((f, i) => { f.textContent = eingabe[i] || ""; f.classList.toggle("aktiv", i === eingabe.length); });
+  const tasten = html(`<div class="tasten ${typ === "zahlen" ? "zahlen" : ""}"></div>`);
+  const zeichenListe = typ === "zahlen" ? "1234567890".split("") : "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  zeichenListe.forEach(c => {
+    const t = html(`<button class="taste">${c}</button>`);
+    t.onclick = () => { if (eingabe.length < felder.length){ eingabe.push(c); zeigen(); } };
+    tasten.appendChild(t);
+  });
+  const weg = html(`<button class="taste weg" aria-label="löschen">⌫</button>`);
+  weg.onclick = () => { eingabe.pop(); zeigen(); };
+  const ok = html(`<button class="taste ok">OK</button>`);
+  ok.onclick = () => { if (eingabe.length === felder.length) beiOk(eingabe.join(""), () => { eingabe = []; zeigen(); }); };
+  tasten.appendChild(weg); tasten.appendChild(ok);
+  zeigen();
+  box.appendChild(anzeige); box.appendChild(tasten);
+  return box;
+}
+const nurBuchstaben = s => s.replace(/[^A-Z]/g, "");
+
+/* Funk-Knopf: Redemittel + Wörterhilfe */
+function funkOeffnen(){
+  const daten = AGENT_FILES.klassen[Z.klasse];
+  const st = Z.spiel ? Z.spiel.stationen[Z.station] : null;
+  const saetze = st && st.def.saetze ? st.def.saetze[Z.spiel.stufe] : [];
+  const o = html(`<div class="overlay"><div class="dialog"><h2>📻 Radio</h2>
+    <div class="tabs"><button class="tab an" data-t="s">Useful phrases</button><button class="tab" data-t="w">Words</button></div>
+    <div data-inhalt></div><div class="knopfreihe"><button class="knopf navy">Close</button></div></div></div>`);
+  const inhalt = o.querySelector("[data-inhalt]");
+  const zeigeSaetze = () => {
+    inhalt.innerHTML = (saetze.length ? `<p class="de">Für diese Station:</p><ul class="satzliste">${saetze.map(x => `<li>${x}</li>`).join("")}</ul>` : "")
+      + `<p class="de">Wenn ihr nicht weiterkommt:</p><ul class="satzliste">${daten.notfallSaetze.map(x => `<li>${x}</li>`).join("")}</ul>`;
+  };
+  const zeigeWoerter = () => { inhalt.innerHTML = daten.woerter.map(([en, de]) => `<div class="wort-zeile"><b>${en}</b><span>${de}</span></div>`).join(""); };
+  o.querySelectorAll(".tab").forEach(t => t.onclick = () => {
+    o.querySelectorAll(".tab").forEach(x => x.classList.remove("an")); t.classList.add("an");
+    t.dataset.t === "s" ? zeigeSaetze() : zeigeWoerter();
+  });
+  zeigeSaetze();
+  o.querySelector(".knopf").onclick = () => o.remove();
+  document.body.appendChild(o);
+}
+function untenLeiste(){
+  const n = Z.spiel.stationen.length;
+  let p = "";
+  for (let i=0;i<n;i++){
+    if (i) p += `<div class="strich"></div>`;
+    const kl = i < Z.station ? "fertig" : (i === Z.station ? "jetzt" : "");
+    p += `<div class="punkt ${kl}">${i+1}</div>`;
+  }
+  const u = html(`<div class="unten"><button class="funk-knopf" aria-label="Radio">${funkSVG()}</button></div>`);
+  u.querySelector(".funk-knopf").onclick = funkOeffnen;
+  document.body.appendChild(u);
+  return html(`<div class="fortschritt-zeile"><div class="fortschritt">${p}</div></div>`);
+}
+
+/* =====================================================================
+   5) BILDSCHIRME
+   ===================================================================== */
+
+/* ---------- Start ---------- */
+function zeigeStart(){
+  Z.spiel = null; Z.rolle = null; rolleKlasse(); leeren();
+  const verfuegbar = k => !!AGENT_FILES.klassen[k];
+  const s = html(`<div>
+    <div class="logo"><div class="logo-band">
+      <svg viewBox="0 0 60 60" width="56" height="56"><circle cx="24" cy="24" r="16" fill="#cfeef0" ${U}/><path d="M36 36 L54 54" stroke="#0b1a33" stroke-width="10" stroke-linecap="round"/><path d="M36 36 L54 54" stroke="#8a5a2e" stroke-width="5" stroke-linecap="round"/></svg>
+      <span>AGENT FILES</span></div>
+      <div class="logo-unter">★ S.P.Y. Academy ★</div></div>
+    <div class="startreihe">
+      <div class="karte gelbrand rolle" data-rolle="field"><div class="titel">Field<br>Agents</div>${rolleFieldSVG()}</div>
+      <div class="schloss-box"><div><div style="display:flex;align-items:center;gap:8px">
+        <button class="pfeil" data-p="-1">◀</button>
+        <div class="schloss"><div class="schloss-innen" data-klasse>${Z.klasse}</div></div>
+        <button class="pfeil" data-p="1">▶</button></div>
+        <div class="schloss-label">CLASS</div></div></div>
+      <div class="karte gelbrand rolle" data-rolle="hq"><div class="titel">HQ</div>${rolleHQSVG()}</div>
+    </div>
+    <div class="leiste"><div class="hinweis" data-info style="text-align:center"></div></div>
+  </div>`);
+  app.appendChild(s);
+  const info = s.querySelector("[data-info]");
+  const aktualisieren = () => {
+    s.querySelector("[data-klasse]").textContent = Z.klasse;
+    info.innerHTML = verfuegbar(Z.klasse)
+      ? "Stellt eure Klasse ein. Dann wählt jedes Team seine Rolle: <b>Field Agents</b> oder <b>HQ</b>."
+      : "Klasse " + Z.klasse + " kommt bald. Im Moment gibt es nur Klasse 5.";
+  };
+  s.querySelectorAll(".pfeil").forEach(p => p.onclick = () => {
+    const i = KLASSEN_ANGEBOT.indexOf(Z.klasse) + Number(p.dataset.p);
+    Z.klasse = KLASSEN_ANGEBOT[(i + KLASSEN_ANGEBOT.length) % KLASSEN_ANGEBOT.length]; aktualisieren();
+  });
+  s.querySelectorAll(".rolle").forEach(r => r.onclick = () => {
+    if (!verfuegbar(Z.klasse)) return;
+    Z.rolle = r.dataset.rolle;
+    Z.rolle === "field" ? zeigeFieldStart() : zeigeHQStart();
+  });
+  aktualisieren();
+}
+
+/* ---------- Field Agents: Mission + Ampel wählen, Nummer erzeugen ---------- */
+function zeigeFieldStart(){
+  leeren();
+  const daten = AGENT_FILES.klassen[Z.klasse];
+  if (Z.wahlMission >= daten.missionen.length) Z.wahlMission = 0;
+  const s = html(`<div>
+    <div class="kopf"><button class="raus" aria-label="zurück">◀</button><div class="banner">Field Agents · Class ${Z.klasse}</div></div>
+    <div class="aufgabe">Wählt eine Mission und die Schwierigkeit. Danach bekommt ihr eine <b>Missionsnummer</b> für HQ.</div>
+    <div class="missionen">${daten.missionen.map((m, i) => `<div class="karte mission-karte" data-m="${i}"><div class="titel">${m.titel}</div><div class="de">${i === 0 ? "Zum Üben – beim ersten Mal" : "Station 1–" + m.stationen.length}</div></div>`).join("")}</div>
+    <div class="leiste"><span class="titel" style="font-size:1.3rem">Difficulty</span>
+      <div class="sterne">${STERNE.map((x, i) => `<button class="stern-knopf s${i}" data-s="${i}">${x}</button>`).join("")}</div>
+      <button class="knopf" data-los>Get mission number</button></div>
+  </div>`);
+  app.appendChild(s);
+  const markieren = () => {
+    s.querySelectorAll(".mission-karte").forEach(k => k.classList.toggle("an", Number(k.dataset.m) === Z.wahlMission));
+    s.querySelectorAll(".stern-knopf").forEach(k => k.classList.toggle("an", Number(k.dataset.s) === Z.wahlStufe));
+  };
+  s.querySelectorAll(".mission-karte").forEach(k => k.onclick = () => { Z.wahlMission = Number(k.dataset.m); markieren(); });
+  s.querySelectorAll(".stern-knopf").forEach(k => k.onclick = () => { Z.wahlStufe = Number(k.dataset.s); markieren(); });
+  s.querySelector(".raus").onclick = zeigeStart;
+  s.querySelector("[data-los]").onclick = () => {
+    const nr = nummerErzeugen(daten.missionen.length, Z.wahlMission, Z.wahlStufe);
+    zeigeNummer(nr);
+  };
+  markieren();
+}
+function zeigeNummer(nr){
+  leeren();
+  const ziffern = String(nr).split("").map(Number);
+  const spiel = missionErzeugen(Z.klasse, nr);
+  const s = html(`<div style="text-align:center">
+    <div class="kopf"><button class="raus" aria-label="zurück">◀</button><div class="banner">Mission No.</div></div>
+    <div class="karte" style="max-width:640px;margin:0 auto">
+      <div class="titel" style="font-size:1.5rem">${spiel.mission.titel} · ${STERNE[spiel.stufe]}</div>
+      <div style="margin:16px 0"><span class="nummer">${nr}</span></div>
+      <p class="hinweis">Sagt HQ diese Nummer auf Englisch:<br><b style="font-size:1.4rem">${codeSprechen(ziffern)}</b></p>
+      <p class="de">Wartet, bis HQ die Nummer eingegeben hat. Dann geht es gemeinsam los.</p>
+      <div class="knopfreihe"><button class="knopf" data-los>Let's go!</button></div>
+    </div></div>`);
+  app.appendChild(s);
+  s.querySelector(".raus").onclick = zeigeFieldStart;
+  s.querySelector("[data-los]").onclick = () => spielStarten(spiel);
+}
+
+/* ---------- HQ: Nummer eingeben ---------- */
+function zeigeHQStart(){
+  leeren();
+  const s = html(`<div>
+    <div class="kopf"><button class="raus" aria-label="zurück">◀</button><div class="banner">HQ · Class ${Z.klasse}</div></div>
+    <div class="aufgabe">Die Field Agents sagen euch eine <b>Missionsnummer</b> mit drei Ziffern. Tippt sie ein.</div>
+    <div class="karte" style="max-width:560px;margin:0 auto"><div class="titel" style="text-align:center;font-size:1.6rem">Mission No.</div><div data-t></div></div>
+  </div>`);
+  app.appendChild(s);
+  s.querySelector(".raus").onclick = zeigeStart;
+  s.querySelector("[data-t]").appendChild(tastatur({ laenge: 3, typ: "zahlen", beiOk: (wert, zuruecksetzen) => {
+    const nr = Number(wert);
+    if (wert[0] === "0" || nr < 100){ erklaeren("nummer", zuruecksetzen); return; }
+    zeigeHQBestaetigen(nr);
+  }}));
+}
+function zeigeHQBestaetigen(nr){
+  leeren();
+  const spiel = missionErzeugen(Z.klasse, nr);
+  const s = html(`<div style="text-align:center">
+    <div class="kopf"><button class="raus" aria-label="zurück">◀</button><div class="banner">Check</div></div>
+    <div class="karte" style="max-width:640px;margin:0 auto">
+      <div style="margin:6px 0 12px"><span class="nummer" style="font-size:3.5rem">${nr}</span></div>
+      <div class="titel" style="font-size:2rem">${spiel.mission.titel}</div>
+      <div style="font-size:2rem;margin:4px 0 10px">${STERNE[spiel.stufe]}</div>
+      <p class="hinweis">Fragt die Field Agents, ob bei ihnen dasselbe steht:<br><b>Is it &quot;${spiel.mission.titel}&quot;? ${["One star","Two stars","Three stars"][spiel.stufe]}?</b></p>
+      <div class="knopfreihe"><button class="knopf papier" data-neu>Andere Nummer</button><button class="knopf" data-los>Let's go!</button></div>
+    </div></div>`);
+  app.appendChild(s);
+  s.querySelector(".raus").onclick = zeigeHQStart;
+  s.querySelector("[data-neu]").onclick = zeigeHQStart;
+  s.querySelector("[data-los]").onclick = () => spielStarten(spiel);
+}
+
+/* ---------- Briefing ---------- */
+function spielStarten(spiel){
+  Z.spiel = spiel; Z.station = 0; Z.geloest = {};
+  rolleKlasse(); leeren();
+  const b = spiel.mission.briefing;
+  const s = html(`<div>
+    <div class="kopf"><button class="raus" aria-label="abbrechen">✕</button><div class="banner">${spiel.mission.titel}</div><div class="sprecher">${Z.rolle === "hq" ? "HQ" : "FIELD AGENTS"}</div></div>
+    <div class="briefing">${hamsterSVG(true)}
+      <div><div class="sprechblase">${b.en.join("<br>")}</div>
+      <div class="aufgabe" style="margin-top:14px">${b.de}
+        <ul class="regeln"><li><b>Agentenregel 1:</b> Zeigt euren Bildschirm nie dem anderen Team.</li>
+        <li><b>Agentenregel 2:</b> Sprecht leise.</li><li><b>Agentenregel 3:</b> Sprecht Englisch! Hilfe gibt es im Funkgerät 📻.</li></ul></div>
+      <div class="knopfreihe"><button class="knopf" data-los>Let's go!</button></div></div></div>
+  </div>`);
+  app.appendChild(s);
+  s.querySelector(".raus").onclick = abbrechen;
+  s.querySelector("[data-los]").onclick = zeigeStation;
+}
+function abbrechen(){ fragen("Wollt ihr die Mission wirklich abbrechen? Dann müsst ihr von vorne anfangen.", "Abbrechen", zeigeStart); }
+
+/* ---------- Station (allgemeiner Rahmen) ---------- */
+function zeigeStation(){
+  leeren(); rolleKlasse();
+  const sp = Z.spiel, st = sp.stationen[Z.station], def = st.def, r = st.raetsel;
+  const istTraining = sp.missionIndex === 0;
+  const nr = istTraining ? "Training " + (Z.station + 1) : (def.baustein === "finale" ? "Finale" : "Station " + (Z.station + 1));
+  const s = html(`<div>
+    <div class="kopf"><button class="raus" aria-label="abbrechen">✕</button><div class="banner">${nr} – ${def.titel}</div>
+      <div class="sprecher">Speaker: Agent ${(Z.station % 2) + 1}</div></div>
+    <div class="aufgabe">${def.aufgabe[Z.rolle]}</div>
+    <div data-fort></div>
+    <div data-rahmen></div>
+  </div>`);
+  app.appendChild(s);
+  s.querySelector(".raus").onclick = abbrechen;
+  // Rahmen: Gerät (Field) oder Akte (HQ)
+  const rahmen = Z.rolle === "field"
+    ? html(`<div class="geraet"><div class="lampe"></div><div class="grill"></div><div class="schirm" data-inhalt></div></div>`)
+    : html(`<div class="akte"><div class="stempel">CONFIDENTIAL</div><div data-inhalt style="margin-top:22px"></div></div>`);
+  s.querySelector("[data-rahmen]").appendChild(rahmen);
+  const inhalt = rahmen.querySelector("[data-inhalt]");
+  const ctx = {
+    inhalt, def, r, stufe: sp.stufe,
+    geloest: (extra) => zeigeErfolg(inhalt, def, r, extra)
+  };
+  ANSICHT[def.baustein][Z.rolle](ctx);
+  // Empfänger: Funkcode eingeben
+  if (def.loeser !== "beide" && def.loeser !== Z.rolle) funkPanel(s, r.funkcode, def.loeser);
+  s.querySelector("[data-fort]").appendChild(untenLeiste());
+  window.scrollTo(0, 0);
+}
+function funkPanel(ziel, code, von){
+  const satz = von === "field" ? "Wenn die Field Agents fertig sind, sagen sie euch einen Funkcode." : "Wenn HQ fertig ist, sagt HQ euch einen Funkcode.";
+  const p = html(`<div class="funk-panel"><div class="titel">📻 Radio code</div>
+    <p class="de">${satz} Tippt ihn hier ein, dann geht es weiter.</p><div data-t></div></div>`);
+  p.querySelector("[data-t]").appendChild(tastatur({ laenge: 2, typ: "zahlen", beiOk: (wert, zurueck) => {
+    if (wert === code.join("")) naechsteStation(); else erklaeren("funk", zurueck);
+  }}));
+  ziel.appendChild(p);
+}
+function zeigeErfolg(inhalt, def, r, extra){
+  const anderes = Z.rolle === "field" ? "HQ" : "den Field Agents";
+  const teil = r.codeTeil ? `<div class="code-box"><div class="de">Eure Zahlen fürs Finale – merkt sie euch!</div><div class="code-gross" style="font-size:2.6rem">${r.codeTeil.join(" ")}</div></div>` : "";
+  inhalt.innerHTML = "";
+  inhalt.appendChild(html(`<div class="erfolg"><div class="haken">✓ Correct!</div>
+    ${extra ? `<p class="hinweis">${extra}</p>` : ""}${teil}
+    <div class="code-box"><div class="de">Funkcode für ${anderes}:</div><div class="code-gross">${r.funkcode.join(" ")}</div>
+    <div class="hinweis">Sagt: <b>${codeSprechen(r.funkcode)}</b></div></div>
+    <div class="knopfreihe"><button class="knopf">Weiter ›</button></div></div>`));
+  inhalt.querySelector(".knopf").onclick = naechsteStation;
+}
+function naechsteStation(){
+  Z.station++;
+  if (Z.station >= Z.spiel.stationen.length) zeigeEnde(); else zeigeStation();
+}
+function zeigeEnde(){
+  leeren();
+  const m = Z.spiel.mission;
+  const s = html(`<div style="text-align:center">
+    <div class="kopf"><div class="banner">${m.titel}</div></div>
+    <div class="karte" style="max-width:640px;margin:20px auto">${hamsterSVG(true)}
+      <div class="titel" style="font-size:2.4rem;color:var(--gruen)">${m.ende.en}</div>
+      <p class="hinweis">${m.ende.de}</p>
+      <div class="knopfreihe"><button class="knopf">Neue Mission</button></div></div></div>`);
+  app.appendChild(s);
+  s.querySelector(".knopf").onclick = zeigeStart;
+}
+
+/* =====================================================================
+   6) ANSICHTEN DER BAUSTEINE (je Rolle)
+   ===================================================================== */
+const ANSICHT = {
+
+  /* ---------- Buchstabieren (Training) ---------- */
+  buchstabieren: {
+    field(c){ c.def.loeser === "field" ? eintippen(c) : wortZeigen(c); },
+    hq(c){ c.def.loeser === "hq" ? eintippen(c) : wortZeigen(c); }
+  },
+
+  /* ---------- Station 1: Tür ---------- */
+  tuer: {
+    field(c){
+      const w = html(`<div class="tuer-wrap"><div class="tuer"><div class="schild">${c.r.tuerName.replace(/^(MRS|MR|MS) /, "$1<br>")}</div></div>
+        <div class="tuer-rechts"><div class="titel" style="font-size:1.3rem;text-align:center">Password</div><div data-t></div></div></div>`);
+      w.querySelector("[data-t]").appendChild(tastatur({ muster: c.r.passwort, typ: "buchstaben", beiOk: (wert, zurueck) => {
+        if (wert === nurBuchstaben(c.r.passwort)) c.geloest("The door is open!"); else erklaeren("tuer", zurueck);
+      }}));
+      c.inhalt.appendChild(w);
+    },
+    hq(c){
+      const saetze = c.def.saetze[c.stufe];
+      c.inhalt.appendChild(html(`<div class="zweispaltig"><div class="papier"><h3>PASSWORDS – TOP SECRET</h3>
+        ${c.r.liste.map(z => `<div class="liste-zeile"><span>${z.name}</span><b>${z.pw}</b></div>`).join("")}</div>
+        ${zettel(saetze)}</div>`));
+    }
+  },
+
+  /* ---------- Station 2: Zimmer ---------- */
+  zimmer: {
+    field(c){
+      const gefunden = [];
+      const D = c.r.bewegt.length;
+      const zeichnen = () => {
+        c.inhalt.innerHTML = "";
+        c.inhalt.appendChild(html(`<div>${zimmerSVG(c.r.nachher, c.def, c.def.beschriftet[c.stufe], gefunden)}
+          <div class="zaehler">Found: ${gefunden.length} / ${D}</div></div>`));
+        c.inhalt.querySelectorAll(".ding").forEach(g => g.addEventListener("click", () => {
+          const id = g.dataset.id;
+          if (gefunden.includes(id)) return;
+          if (c.r.bewegt.includes(id)){
+            gefunden.push(id);
+            if (gefunden.length === D) c.geloest(c.def.hinweisDanach.en + "<br><span class='de'>" + c.def.hinweisDanach.de + "</span>");
+            else zeichnen();
+          } else erklaeren("zimmer");
+        }));
+      };
+      zeichnen();
+    },
+    hq(c){
+      c.inhalt.appendChild(html(`<div class="zweispaltig"><div class="foto">${zimmerSVG(c.r.vorher, c.def, c.def.beschriftet[c.stufe], null)}
+        <div class="foto-unter">Professor Plum's room – photo</div></div>${zettel(c.def.saetze[c.stufe])}</div>`));
+    }
+  },
+
+  /* ---------- Station 3: Kinder auf dem Schulhof ---------- */
+  kinder: {
+    field(c){
+      let gezeigt = null;
+      const zeichnen = () => {
+        c.inhalt.innerHTML = "";
+        c.inhalt.appendChild(html(`<div>${schulhofSVG(c.r.kinder, gezeigt)}
+          <div class="zaehler">${gezeigt ? "There's a name on the bag: " + gezeigt + "<br><span class='de'>Buchstabiert HQ diesen Namen.</span>" : "Who is with Biscuit? Tap the kid."}</div></div>`));
+        c.inhalt.querySelectorAll(".kind").forEach(g => g.addEventListener("click", () => {
+          if (gezeigt) return;
+          if (g.dataset.name === c.r.zielName){ gezeigt = c.r.zielName; zeichnen(); }
+          else erklaeren("kinder");
+        }));
+      };
+      zeichnen();
+    },
+    hq(c){
+      const w = html(`<div class="zweispaltig"><div class="papier"><h3>${c.def.notizTitel}</h3>${c.r.notiz.map(z => `<div>${z}</div>`).join("")}</div>
+        ${zettel(c.def.saetze[c.stufe])}</div>`);
+      const t = html(`<div class="papier" style="margin-top:16px"><h3>Name on the bag</h3><div data-t></div></div>`);
+      t.querySelector("[data-t]").appendChild(tastatur({ muster: c.r.zielName, typ: "buchstaben", beiOk: (wert, zurueck) => {
+        if (wert === c.r.zielName) c.geloest("Biscuit is in " + c.r.zielName.charAt(0) + c.r.zielName.slice(1).toLowerCase() + "'s bag!");
+        else erklaeren("name", zurueck);
+      }}));
+      c.inhalt.appendChild(w); c.inhalt.appendChild(t);
+    }
+  },
+
+  /* ---------- Finale ---------- */
+  finale: {
+    field(c){ finaleAnsicht(c, Z.spiel.codeField); },
+    hq(c){ finaleAnsicht(c, Z.spiel.codeHQ); }
+  }
+};
+
+function zettel(saetze){
+  return `<div class="zettel"><h4>Useful phrases:</h4><ul>${saetze.map(x => `<li>${x}</li>`).join("")}</ul></div>`;
+}
+function wortZeigen(c){
+  const wer = c.def.loeser === "field" ? "den Field Agents" : "HQ";
+  c.inhalt.appendChild(html(`<div class="zweispaltig"><div class="papier" style="text-align:center"><h3>AGENT NAME</h3>
+    <div class="code-gross" style="letter-spacing:.08em;font-size:3.2rem">${c.r.wort}</div>
+    <div class="de">Buchstabiert diesen Namen ${wer}.</div></div>${zettel(c.def.saetze[c.stufe])}</div>`));
+}
+function eintippen(c){
+  const w = html(`<div><div class="titel" style="text-align:center;font-size:1.4rem">Agent name</div><div data-t></div></div>`);
+  w.querySelector("[data-t]").appendChild(tastatur({ muster: c.r.wort, typ: "buchstaben", beiOk: (wert, zurueck) => {
+    if (wert === nurBuchstaben(c.r.wort)) c.geloest("Hello, agent " + c.r.wort.toLowerCase() + "!"); else erklaeren("buchstabieren", zurueck);
+  }}));
+  c.inhalt.appendChild(w);
+}
+function finaleAnsicht(c, eigene){
+  const ziel = Z.spiel.codeField.concat(Z.spiel.codeHQ).join("");
+  const w = html(`<div style="text-align:center">${hamsterSVG(false).replace("<svg", '<svg style="width:110px"')}
+    <div class="code-box"><div class="de">Eure Zahlen:</div><div class="code-gross" style="font-size:3rem">${eigene.join(" ")}</div></div>
+    <p class="hinweis">Code für die Box: <b>zuerst Field Agents, dann HQ</b></p><div data-t></div></div>`);
+  w.querySelector("[data-t]").appendChild(tastatur({ laenge: 4, typ: "zahlen", beiOk: (wert, zurueck) => {
+    if (wert === ziel) zeigeEnde(); else erklaeren("finale", zurueck);
+  }}));
+  c.inhalt.appendChild(w);
+}
+
+/* Los geht's */
+zeigeStart();
+</script>
+</body>
+</html>
