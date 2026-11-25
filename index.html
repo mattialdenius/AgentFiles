@@ -3,11 +3,16 @@
   =====================================================================
   AGENT FILES – Englisch-Informationslücken-Spiel (Realschule BW)
   =====================================================================
-  Version: v0.1.2
+  Version: v0.1.3
   Autor:   M. Aldenius (mit Claude)
 
   Änderungsliste
   --------------
+  v0.1.3 (25.11.2026) – Auswertung Praxistest Klasse 5
+    - Zimmer: Checkliste der Möbel bei HQ (zum Abhaken) und kurzer
+      Schritt-für-Schritt-Tipp für beide Teams
+    - „Useful phrases“ jetzt auch bei den Field Agents direkt sichtbar
+      (und bei HQ auf allen Bildschirmen)
   v0.1.2 (25.11.2026) – Rückmeldung aus dem Praxistest
     - Alarm-Sperre als schmale Leiste oben statt Fenster in der Mitte:
       das Bild bleibt sichtbar, damit die Schüler nachfragen können
@@ -229,6 +234,20 @@ body.hq .sprecher{background:var(--koralle)}
 .satzliste li{background:#fff;border:2px solid #d6ccb4;border-radius:10px;padding:8px 12px;margin:6px 0;font-size:1.15rem}
 .wort-zeile{display:flex;justify-content:space-between;border-bottom:1px solid #d6ccb4;padding:6px 2px;font-size:1.05rem}
 
+/* Redemittel bei den Field Agents + Vorgehen + Checkliste (v0.1.3) */
+.phrasen{margin-top:16px;background:#ffe27a;border:3px solid var(--navy-dunkel);border-radius:14px;padding:10px 14px;font-family:var(--f-hand)}
+.phrasen h4{margin:0 0 6px;font-family:var(--f-hand);font-size:1.25rem}
+.phrasen .chips{display:flex;flex-wrap:wrap;gap:8px}
+.phrasen .chip{background:#fff;border:2px solid #c9a52a;border-radius:10px;padding:4px 10px;font-size:1.15rem}
+.vorgehen{background:#e8f7f6;border:3px solid var(--tuerkis);border-radius:14px;padding:8px 14px;margin-bottom:12px;font-size:1.15rem}
+.vorgehen ol{margin:4px 0 0;padding-left:24px}
+.checkliste{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.check{display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 12px;border:3px solid var(--navy-dunkel);border-radius:12px;background:#fff;
+  font-family:var(--f-titel);font-weight:900;font-size:1.4rem;text-transform:uppercase;cursor:pointer;box-shadow:0 3px 0 var(--navy-dunkel)}
+.check .box{width:30px;height:30px;border:3px solid var(--navy-dunkel);border-radius:6px;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}
+.check.an{background:#d9f2df}.check.an .box{background:var(--gruen)}
+.check small{font-family:var(--f-text);font-weight:500;text-transform:none;font-size:.9rem;color:#33425a;margin-left:auto}
+
 /* Alarm-Leiste */
 .alarm-leiste{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;gap:12px;padding:8px 14px;
   background:var(--koralle);color:#fff;border-bottom:4px solid var(--navy-dunkel);box-shadow:0 4px 0 rgba(0,0,0,.25);font-size:1.1rem;line-height:1.3}
@@ -260,7 +279,7 @@ svg.szene{width:100%;height:auto;display:block;border:3px solid var(--navy-dunke
 </head>
 <body>
 <div id="app"></div>
-<footer>Agent Files · v0.1.2 · M. Aldenius</footer>
+<footer>Agent Files · v0.1.3 · M. Aldenius</footer>
 
 <!-- Inhalte (eine Datei pro Klasse) -->
 <script src="daten/klasse5.js"></script>
@@ -270,7 +289,7 @@ svg.szene{width:100%;height:auto;display:block;border:3px solid var(--navy-dunke
 /* =====================================================================
    1) EINSTELLUNGEN
    ===================================================================== */
-const VERSION = "v0.1.2";
+const VERSION = "v0.1.3";
 /* Raten begrenzen: erlaubte Fehlversuche pro Station, danach Alarm-Sperre */
 const RATEN = { zimmer: 2, kinder: 1, sperreSekunden: 30 };
 const KLASSEN_ANGEBOT = [5, 6, 7, 8];          // Drehschloss
@@ -868,8 +887,8 @@ function zeigeStation(){
   s.querySelector(".raus").onclick = abbrechen;
   // Rahmen: Gerät (Field) oder Akte (HQ)
   const rahmen = Z.rolle === "field"
-    ? html(`<div class="geraet"><div class="lampe"></div><div class="grill"></div><div class="schirm" data-inhalt></div></div>`)
-    : html(`<div class="akte"><div class="stempel">CONFIDENTIAL</div><div data-inhalt style="margin-top:22px"></div></div>`);
+    ? html(`<div class="geraet"><div class="lampe"></div><div class="grill"></div><div class="schirm" data-inhalt></div><div data-phrasen></div></div>`)
+    : html(`<div class="akte"><div class="stempel">CONFIDENTIAL</div><div data-inhalt style="margin-top:22px"></div><div data-phrasen></div></div>`);
   s.querySelector("[data-rahmen]").appendChild(rahmen);
   const inhalt = rahmen.querySelector("[data-inhalt]");
   const ctx = {
@@ -877,6 +896,12 @@ function zeigeStation(){
     geloest: (extra) => zeigeErfolg(inhalt, def, r, extra)
   };
   ANSICHT[def.baustein][Z.rolle](ctx);
+  // Redemittel sichtbar: immer bei Field Agents, bei HQ nur wenn kein Notizzettel da ist
+  if (def.saetze && (Z.rolle === "field" || !inhalt.querySelector(".zettel"))){
+    const saetze = def.saetze[sp.stufe];
+    rahmen.querySelector("[data-phrasen]").appendChild(html(`<div class="phrasen"><h4>Useful phrases:</h4>
+      <div class="chips">${saetze.map(x => `<span class="chip">${x}</span>`).join("")}</div></div>`));
+  }
   // Empfänger: Funkcode eingeben
   if (def.loeser !== "beide" && def.loeser !== Z.rolle) funkPanel(s, r.funkcode, def.loeser);
   s.querySelector("[data-fort]").appendChild(untenLeiste());
@@ -956,7 +981,7 @@ const ANSICHT = {
       let uebrig = RATEN.zimmer, gesperrt = false;
       const zeichnen = () => {
         c.inhalt.innerHTML = "";
-        c.inhalt.appendChild(html(`<div>${zimmerSVG(c.r.nachher, c.def, c.def.beschriftet[c.stufe], gefunden)}
+        c.inhalt.appendChild(html(`<div>${vorgehenBox(c.def.vorgehen && c.def.vorgehen.field)}${zimmerSVG(c.r.nachher, c.def, c.def.beschriftet[c.stufe], gefunden)}
           <div class="zaehler">Found: ${gefunden.length} / ${D} &nbsp;·&nbsp; ${gesperrt ? "🚨 gesperrt" : versucheText(uebrig, RATEN.zimmer)}</div></div>`));
         c.inhalt.classList.toggle("gesperrt", gesperrt);
         c.inhalt.querySelectorAll(".ding").forEach(g => g.addEventListener("click", () => {
@@ -973,8 +998,14 @@ const ANSICHT = {
       zeichnen();
     },
     hq(c){
-      c.inhalt.appendChild(html(`<div class="zweispaltig"><div class="foto">${zimmerSVG(c.r.vorher, c.def, c.def.beschriftet[c.stufe], null)}
-        <div class="foto-unter">Professor Plum's room – photo</div></div>${zettel(c.def.saetze[c.stufe])}</div>`));
+      const w = html(`<div>${vorgehenBox(c.def.vorgehen && c.def.vorgehen.hq)}<div class="zweispaltig"><div class="foto">${zimmerSVG(c.r.vorher, c.def, c.def.beschriftet[c.stufe], null)}
+        <div class="foto-unter">Professor Plum's room – photo</div></div>
+        <div><div class="checkliste">${(c.def.moebel || []).map(([en, de]) => `<button class="check"><span class="box"></span>${en}<small>${de}</small></button>`).join("")}</div>
+        ${zettel(c.def.saetze[c.stufe])}</div></div></div>`);
+      w.querySelectorAll(".check").forEach(k => k.onclick = () => {
+        k.classList.toggle("an"); k.querySelector(".box").textContent = k.classList.contains("an") ? "✓" : "";
+      });
+      c.inhalt.appendChild(w);
     }
   },
 
@@ -1016,6 +1047,10 @@ const ANSICHT = {
   }
 };
 
+function vorgehenBox(schritte){
+  if (!schritte) return "";
+  return `<div class="vorgehen"><b>So geht's:</b><ol>${schritte.map(x => `<li>${x}</li>`).join("")}</ol></div>`;
+}
 function zettel(saetze){
   return `<div class="zettel"><h4>Useful phrases:</h4><ul>${saetze.map(x => `<li>${x}</li>`).join("")}</ul></div>`;
 }

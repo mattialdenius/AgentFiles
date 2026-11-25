@@ -195,6 +195,12 @@ AGENT_FILES.klassen[5] = {
             { id: "nextToWardrobe", en: "next to the wardrobe" },
             { id: "onCarpet",       en: "on the carpet" }
           ],
+          // Feste Reihenfolge zum Vergleichen (Checkliste bei HQ, seit v0.1.3)
+          moebel: [["bed", "Bett"], ["shelf", "Regal"], ["chair", "Stuhl"], ["table", "Tisch"], ["wardrobe", "Schrank"], ["carpet", "Teppich"]],
+          vorgehen: {
+            field: ["HQ nennt euch Möbel für Möbel, was dort liegt.", "Vergleicht mit eurem Zimmer.", "Ist etwas an einem anderen Platz? Antippen!"],
+            hq: ["Geht die Liste von oben nach unten durch.", "Sagt bei jedem Möbelstück, was darauf, darunter oder daneben ist.", "Fertig mit einem Möbelstück? Abhaken!"]
+          },
           anzahlDinge: [5, 6, 7],
           anzahlUnterschiede: [1, 2, 3],
           beschriftet: [true, false, false],
